@@ -97,7 +97,7 @@ let lastEventScore = 0;
 let dropInterval = 1000;
 
 // Google Apps Script 연동을 위한 설정
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyS6fF7yfZCXMJgAu5P_c-Kpw4YFewTRHvRMPC6NDGSs2Oi1tyNahuATdg_z-hwJenA2w/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3rx7L5URKsCM4JSkM3jiCrxIIE17egBamLXvP4WV_1loPbd-Uv6Lnf_4C3eHH8wduBQ/exec';
 
 // 이벤트 알림 시스템
 function showEventNotification(leader) {
@@ -404,6 +404,7 @@ async function saveScore() {
 
         const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
             method: 'POST',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -412,8 +413,7 @@ async function saveScore() {
                 score: score,
                 level: level,
                 date: new Date().toISOString()
-            }),
-            mode: 'cors'  // CORS 모드 추가
+            })
         });
 
         console.log('Response status:', response.status);
@@ -427,7 +427,8 @@ async function saveScore() {
         }
     } catch (error) {
         console.error('점수 저장 중 오류:', error);
-        alert('점수 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+        // 오류가 발생해도 게임은 계속할 수 있도록 함
+        alert(`점수 저장에 실패했습니다.\n임시 저장된 최고점수: ${highScore}`);
     }
 }
 
