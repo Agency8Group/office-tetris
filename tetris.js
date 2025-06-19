@@ -98,7 +98,7 @@ let lastEventScore = 0;
 let dropInterval = 1000;
 
 // Google Apps Script 연동을 위한 설정
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnhtkwh2apGw--O1pF_w1BBOd7xA7Itsk98yvn1qRsOeiijByzUiLXK1r51IPIWcoZ/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEnJasgMFGnArS3a4B0F_KU8BgtFZ1eXrNm1qx6bb6E6t0h_CP1pVfG3QG4w-_wA9jbw/exec';
 
 // 순위표 관리
 function getLeaderboard() {
@@ -416,7 +416,7 @@ function draw() {
     nextPiece.draw(nextCtx, offsetX, offsetY);
 }
 
-// 점수 저장
+// 점수 저장 (Google Apps Script 연동)
 async function saveScore() {
     if (score > highScore) {
         highScore = score;
@@ -424,12 +424,73 @@ async function saveScore() {
     }
 
     try {
-        const playerName = prompt('이름을 입력하세요:') || '익명';
-        updateLeaderboard(playerName, score, level);
-        displayLeaderboard();
+        const playerName = prompt('이름을 입력하세요 (2-10자):') || '익명';
+        if (playerName.length < 2 || playerName.length > 10) {
+            throw new Error('이름은 2-10자 사이여야 합니다.');
+        }
+
+        // JSONP 방식으로 변경
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = GOOGLE_APPS_SCRIPT_URL;
+        form.target = 'hidden_iframe';
+
+        const data = {
+            playerName: playerName.trim(),
+            score: Math.floor(score), // 정수로 변환
+            level: Math.floor(level), // 정수로 변환
+            date: new Date().toISOString()
+        };
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'data';
+        input.value = JSON.stringify(data);
+        form.appendChild(input);
+
+        // Hidden iframe 생성 또는 재사용
+        let iframe = document.getElementById('hidden_iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.name = 'hidden_iframe';
+            iframe.id = 'hidden_iframe';
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+        }
+
+        // 폼 제출 후 응답 처리
+        iframe.onload = () => {
+            try {
+                // 순위표 데이터 가져오기
+                fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getRankings`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            let message = '🏆 순위표 TOP 10 🏆\n\n';
+                            data.data.forEach((row, index) => {
+                                const [rank, name, playerScore, date] = row;
+                                const formattedDate = new Date(date).toLocaleDateString();
+                                message += `${rank}. ${name}: ${playerScore}점 - ${formattedDate}\n`;
+                            });
+                            alert(message);
+                        } else {
+                            throw new Error('순위표 데이터를 가져오는데 실패했습니다.');
+                        }
+                    });
+            } catch (error) {
+                console.error('순위표 로딩 중 오류:', error);
+                alert(`점수는 저장되었지만 순위표를 불러오는데 실패했습니다.\n점수: ${score}`);
+            }
+        };
+
+        // 폼 제출
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
     } catch (error) {
         console.error('점수 저장 중 오류:', error);
-        alert(`점수 저장에 실패했습니다.\n임시 저장된 최고점수: ${highScore}`);
+        alert(`점수 저장에 실패했습니다.\n임시 저장된 최고점수: ${highScore}\n오류: ${error.message}`);
     }
 }
 
