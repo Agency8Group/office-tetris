@@ -141,8 +141,8 @@ function checkTeamLeaderEvent() {
         const leader = TEAM_LEADERS[eventThreshold - 1];
         showEventNotification(leader);
         
-        // 레벨 증가
-        level = eventThreshold + 1;
+        // 레벨 증가 - 현재 레벨에서 1 증가
+        level += 1;
         levelElement.textContent = level;
         
         // 스피드 증가
