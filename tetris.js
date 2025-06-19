@@ -385,36 +385,49 @@ function draw() {
     nextPiece.draw(nextCtx, offsetX, offsetY);
 }
 
-// 점수 저장 (Google Apps Script 연동 준비)
+// 점수 저장 (Google Apps Script 연동)
 async function saveScore() {
     if (score > highScore) {
         highScore = score;
         localStorage.setItem('tetrisHighScore', highScore);
     }
 
-    // Google Apps Script로 점수 전송 (나중에 활성화)
-    if (GOOGLE_APPS_SCRIPT_URL) {
-        try {
-            const playerName = prompt('이름을 입력하세요:') || '익명';
-            const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    playerName: playerName,
-                    score: score,
-                    level: level,
-                    date: new Date().toISOString()
-                })
-            });
-            
-            if (response.ok) {
-                console.log('점수가 성공적으로 저장되었습니다.');
-            }
-        } catch (error) {
-            console.error('점수 저장 중 오류:', error);
+    // Google Apps Script로 점수 전송
+    try {
+        const playerName = prompt('이름을 입력하세요:') || '익명';
+        console.log('Sending score to Google Sheets...', {
+            playerName,
+            score,
+            level,
+            date: new Date().toISOString()
+        });
+
+        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                playerName: playerName,
+                score: score,
+                level: level,
+                date: new Date().toISOString()
+            }),
+            mode: 'cors'  // CORS 모드 추가
+        });
+
+        console.log('Response status:', response.status);
+        const responseData = await response.text();
+        console.log('Response data:', responseData);
+
+        if (response.ok) {
+            alert(`점수가 저장되었습니다!\n플레이어: ${playerName}\n점수: ${score}`);
+        } else {
+            throw new Error('점수 저장 실패');
         }
+    } catch (error) {
+        console.error('점수 저장 중 오류:', error);
+        alert('점수 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
 }
 
