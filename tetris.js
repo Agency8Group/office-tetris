@@ -82,14 +82,7 @@ const TEAM_LEADERS = [
 ];
 
 // 게임 변수
-let canvas = document.getElementById('gameCanvas');
-let ctx = canvas.getContext('2d');
-let nextCanvas = document.getElementById('nextBlock');
-let nextCtx = nextCanvas.getContext('2d');
-let scoreElement = document.getElementById('score');
-let levelElement = document.getElementById('level');
-let startModal = document.getElementById('startModal');
-
+let canvas, ctx, nextCanvas, nextCtx, scoreElement, levelElement, startModal;
 let score = 0;
 let level = 1;
 let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
@@ -106,6 +99,17 @@ let dropInterval = 1000;
 
 // Google Apps Script 연동을 위한 설정
 const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5tTI1E3uydS0bbc6yWlV9ujkGw2MATvI5dEHK79Presoi58ehsU6wwxaOkJxpg9AViQ/exec';
+
+// DOM 요소 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+    nextCanvas = document.getElementById('nextBlock');
+    nextCtx = nextCanvas.getContext('2d');
+    scoreElement = document.getElementById('score');
+    levelElement = document.getElementById('level');
+    startModal = document.getElementById('startModal');
+});
 
 // 순위표 관리
 function getLeaderboard() {
