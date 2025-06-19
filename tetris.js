@@ -138,7 +138,7 @@ function updateLeaderboard(playerName, score, level) {
 
 function displayLeaderboard() {
     const leaderboard = getLeaderboard();
-    let message = '🏆 순위표 TOP 10 🏆\n\n';
+    let message = '🏆 순위표 TOP 3 🏆\n\n';
     message += '[ 총점 계산방식 ]\n';
     message += '기본점수 × (1 + (레벨-1) × 0.1)\n';
     message += '예) 1000점, 레벨3 = 1000 × (1 + 0.2) = 1200점\n\n';
