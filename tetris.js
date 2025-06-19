@@ -110,6 +110,9 @@ document.addEventListener('DOMContentLoaded', function() {
     levelElement = document.getElementById('level');
     startModal = document.getElementById('startModal');
 
+    // 임시 저장된 점수 재시도
+    retryTempScores();
+
     // 초기 게임 보드 그리기
     draw();
 });
@@ -566,10 +569,28 @@ function draw() {
 // 점수 저장 (Google Apps Script 연동)
 async function saveScore() {
     try {
-        const playerName = prompt('🎮 게임 결과 🎮\n\n이름을 입력하세요 (2-10자):', '');
-        if (!playerName || playerName.length < 2 || playerName.length > 10) {
-            alert('⚠️ 유효한 이름을 입력해주세요! (2-10자)');
-            return;
+        let playerName;
+        let isValidName = false;
+
+        while (!isValidName) {
+            playerName = prompt('🎮 게임 결과 🎮\n\n이름을 입력하세요 (2-10자):', '');
+            
+            // 취소 버튼을 눌렀을 때
+            if (playerName === null) {
+                const confirmQuit = confirm('게임 기록을 저장하지 않고 나가시겠습니까?');
+                if (confirmQuit) {
+                    return;
+                }
+                continue;
+            }
+
+            // 이름 유효성 검사
+            if (playerName.length < 2 || playerName.length > 10) {
+                alert('⚠️ 이름은 2-10자로 입력해주세요!');
+                continue;
+            }
+
+            isValidName = true;
         }
 
         const totalScore = Math.round(score * (1 + (level - 1) * 0.1));
@@ -597,18 +618,97 @@ async function saveScore() {
             date: new Date().toISOString()
         }));
 
-        await fetch(GOOGLE_APPS_SCRIPT_URL, {
+        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
             method: 'POST',
+            mode: 'no-cors', // CORS 정책 우회
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: formData.toString()
         });
 
+        // 로컬 스토리지에도 백업 저장
+        try {
+            const localScores = JSON.parse(localStorage.getItem('tetrisScores') || '[]');
+            localScores.push({
+                playerName,
+                score,
+                level,
+                totalScore,
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('tetrisScores', JSON.stringify(localScores));
+        } catch (e) {
+            console.warn('로컬 저장소 저장 실패:', e);
+        }
+
         console.log('점수가 저장되었습니다.');
+        alert('🎉 점수가 성공적으로 저장되었습니다!');
         
     } catch (error) {
         console.error('점수 저장 중 오류 발생:', error);
+        
+        // 오류 상세 정보 출력
+        let errorMessage = '점수 저장에 실패했습니다.\n';
+        if (error.message) {
+            errorMessage += `\n오류 내용: ${error.message}`;
+        }
+        
+        // 로컬 스토리지에 임시 저장 시도
+        try {
+            const tempScores = JSON.parse(localStorage.getItem('tetrisTempScores') || '[]');
+            tempScores.push({
+                playerName,
+                score,
+                level,
+                totalScore,
+                date: new Date().toISOString(),
+                savedAt: new Date().toISOString()
+            });
+            localStorage.setItem('tetrisTempScores', JSON.stringify(tempScores));
+            errorMessage += '\n\n✅ 점수가 임시로 저장되었습니다.\n다음 게임에서 자동으로 다시 저장을 시도합니다.';
+        } catch (e) {
+            console.warn('임시 저장소 저장 실패:', e);
+        }
+        
+        alert(errorMessage);
+    }
+}
+
+// 시작할 때 임시 저장된 점수가 있다면 다시 저장 시도
+async function retryTempScores() {
+    try {
+        const tempScores = JSON.parse(localStorage.getItem('tetrisTempScores') || '[]');
+        if (tempScores.length === 0) return;
+
+        for (const scoreData of tempScores) {
+            try {
+                const formData = new URLSearchParams();
+                formData.append('data', JSON.stringify({
+                    playerName: scoreData.playerName,
+                    score: scoreData.score,
+                    level: scoreData.level,
+                    date: scoreData.date
+                }));
+
+                await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+            } catch (e) {
+                console.warn('임시 점수 재저장 실패:', e);
+                return; // 하나라도 실패하면 중단하고 나머지는 보관
+            }
+        }
+
+        // 모든 임시 점수가 성공적으로 저장되면 임시 저장소 비우기
+        localStorage.removeItem('tetrisTempScores');
+    } catch (e) {
+        console.error('임시 점수 처리 중 오류:', e);
     }
 }
 
