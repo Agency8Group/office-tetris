@@ -558,31 +558,50 @@ async function saveScore() {
         
         alert(scoreMessage);
 
+        // API 요청 데이터
         const gameData = {
-            playerName,
-            score,
-            level,
+            name: playerName,        // playerName -> name으로 변경
+            score: score,
+            level: level,
             date: new Date().toISOString()
         };
 
+        // API 호출
         const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json'
             },
-            body: `data=${encodeURIComponent(JSON.stringify(gameData))}`
+            body: JSON.stringify(gameData)
         });
 
-        // 로컬 순위표도 업데이트
-        updateLeaderboard(playerName, score, level);
-        
-        // 순위표 표시
-        displayLeaderboard();
+        const result = await response.json();
+
+        // API 응답 처리
+        if (result.status === 'success') {
+            // 순위표 업데이트 성공
+            console.log('점수가 성공적으로 저장되었습니다.');
+            console.log('총점:', result.data.totalScore);
+            console.log('현재 순위:', result.data.rank);
+            
+            // 로컬 순위표 업데이트
+            updateLeaderboard(playerName, score, level);
+            
+            // 순위표 표시
+            displayLeaderboard();
+        } else {
+            // API 에러 발생 - localStorage로 폴백
+            console.warn('API 저장 실패:', result.message);
+            updateLeaderboard(playerName, score, level);
+            displayLeaderboard();
+        }
         
     } catch (error) {
+        // 네트워크 에러 등 - localStorage로 폴백
         console.error('점수 저장 중 오류 발생:', error);
-        alert('점수 저장에 실패했습니다. 나중에 다시 시도해주세요.');
+        updateLeaderboard(playerName, score, level);
+        displayLeaderboard();
+        alert('온라인 순위표 저장에 실패했습니다. 로컬에만 저장됩니다.');
     }
 }
 
