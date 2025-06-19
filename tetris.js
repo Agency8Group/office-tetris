@@ -97,7 +97,7 @@ let lastEventScore = 0;
 let dropInterval = 1000;
 
 // Google Apps Script 연동을 위한 설정
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3rx7L5URKsCM4JSkM3jiCrxIIE17egBamLXvP4WV_1loPbd-Uv6Lnf_4C3eHH8wduBQ/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzefroBERZela6Hvin6OHayzJO967eXuw1meciYBJ1CLBLsScEX2Ayllgs52peVKG4YPQ/exec';
 
 // 이벤트 알림 시스템
 function showEventNotification(leader) {
