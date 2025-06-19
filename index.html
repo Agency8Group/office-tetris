@@ -11,10 +11,19 @@
                 box-sizing: border-box;
             }
 
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+
             body {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-                min-height: 100vh;
+                height: 100vh;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -31,6 +40,8 @@
                 border-radius: 20px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
                 border: 1px solid rgba(255, 255, 255, 0.2);
+                max-height: 95vh;
+                margin: auto;
             }
 
             .game-container {
@@ -42,6 +53,7 @@
                 border-radius: 10px;
                 background: linear-gradient(145deg, #1a1a2e, #16213e);
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                display: block;
             }
 
             .game-info {
@@ -51,6 +63,14 @@
                 min-width: 200px;
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
                 border: 1px solid rgba(255, 255, 255, 0.3);
+                max-height: calc(100vh - 40px);
+                overflow-y: auto;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE and Edge */
+            }
+
+            .game-info::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Opera */
             }
 
             .game-info h2 {
@@ -84,18 +104,24 @@
             .next-block-container {
                 text-align: center;
                 margin-bottom: 20px;
+                padding: 15px;
+                background: rgba(0, 0, 0, 0.1);
+                border-radius: 10px;
             }
 
             .next-block-container h3 {
                 color: #2c3e50;
-                margin-bottom: 10px;
-                font-size: 1.1em;
+                margin-bottom: 15px;
+                font-size: 1.2em;
+                font-weight: bold;
             }
 
             #nextBlock {
-                border: 2px solid #ddd;
+                border: 2px solid rgba(255, 255, 255, 0.3);
                 border-radius: 8px;
-                background: #f8f9fa;
+                background: rgba(0, 0, 0, 0.2);
+                width: 150px;
+                height: 150px;
             }
 
             .controls {
@@ -261,9 +287,125 @@
                     font-size: 1.5em;
                 }
             }
+
+            /* 시작 모달 스타일 */
+            .start-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+
+            .modal-content {
+                background: rgba(255, 255, 255, 0.95);
+                padding: 30px;
+                border-radius: 20px;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                border: 2px solid rgba(255, 255, 255, 0.3);
+            }
+
+            .modal-content h2 {
+                color: #2c3e50;
+                margin-bottom: 20px;
+                font-size: 2em;
+            }
+
+            .modal-content .instructions {
+                text-align: left;
+                margin: 20px 0;
+                padding: 20px;
+                background: rgba(102, 126, 234, 0.1);
+                border-radius: 10px;
+            }
+
+            .modal-content .instructions h3 {
+                color: #2c3e50;
+                margin-bottom: 15px;
+                font-size: 1.2em;
+            }
+
+            .modal-content .instructions ul {
+                list-style: none;
+                padding: 0;
+            }
+
+            .modal-content .instructions li {
+                margin: 10px 0;
+                padding-left: 25px;
+                position: relative;
+                color: #444;
+            }
+
+            .modal-content .instructions li:before {
+                content: "▶";
+                position: absolute;
+                left: 0;
+                color: #667eea;
+            }
+
+            .start-btn {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+                border: none;
+                padding: 15px 40px;
+                border-radius: 25px;
+                font-size: 1.2em;
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+                margin-top: 20px;
+            }
+
+            .start-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+
+            /* 게임 정보 영역 수정 */
+            .game-info {
+                padding: 20px;
+                max-height: 600px;
+            }
+
+            .score-board {
+                margin-bottom: 15px;
+            }
         </style>
     </head>
     <body>
+        <!-- 시작 모달 -->
+        <div class="start-modal" id="startModal">
+            <div class="modal-content">
+                <h2>🎮 오피스 테트리스 🎮</h2>
+                <div class="instructions">
+                    <h3>게임 설명</h3>
+                    <ul>
+                        <li>← → : 좌우 이동</li>
+                        <li>↓ : 빠르게 내리기</li>
+                        <li>↑ : 블록 회전</li>
+                        <li>스페이스바 : 즉시 떨어뜨리기</li>
+                    </ul>
+                    <h3>특별 기능</h3>
+                    <ul>
+                        <li>레벨업 시 팀장님이 등장!</li>
+                        <li>팀장님 등장 시 게임 속도 증가</li>
+                        <li>높은 레벨일수록 점수 보너스!</li>
+                    </ul>
+                </div>
+                <button class="start-btn" onclick="startGame()">
+                    게임 시작!
+                </button>
+            </div>
+        </div>
+
         <div class="game-wrapper">
             <div class="game-container">
                 <canvas id="gameCanvas" width="300" height="600"></canvas>
@@ -284,26 +426,7 @@
 
                 <div class="next-block-container">
                     <h3>다음 블록</h3>
-                    <canvas id="nextBlock" width="100" height="100"></canvas>
-                </div>
-
-                <div class="controls">
-                    <button class="btn btn-primary" id="startBtn">
-                        게임 시작
-                    </button>
-                    <button class="btn btn-secondary" id="pauseBtn">
-                        일시정지
-                    </button>
-                </div>
-
-                <div class="instructions">
-                    <h4>조작법</h4>
-                    <ul>
-                        <li>← → : 좌우 이동</li>
-                        <li>↓ : 빠르게 내리기</li>
-                        <li>↑ : 블록 회전</li>
-                        <li>스페이스바 : 즉시 떨어뜨리기</li>
-                    </ul>
+                    <canvas id="nextBlock" width="150" height="150"></canvas>
                 </div>
             </div>
         </div>

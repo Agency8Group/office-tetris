@@ -19,56 +19,65 @@ const SHAPES = [
 
 // 팀장 이벤트 시스템
 const TEAM_LEADERS = [
-    // 원래 50>60>70>80
     {
         name: "김개발팀장",
         message: "개발팀장이 출현했다! 코드처럼 빠르게 움직여라! 💻",
-        speedIncrease: 50
+        scoreThreshold: 500,
+        speedIncrease: 1.2
     },
     {
         name: "박디자인팀장", 
         message: "디자인팀장이 출현했다! 아름다운 조화를 만들어라! 🎨",
-        speedIncrease: 100
+        scoreThreshold: 1000,
+        speedIncrease: 1.3
     },
     {
         name: "이기획팀장",
         message: "기획팀장이 출현했다! 전략적으로 블록을 배치해라! 📋",
-        speedIncrease: 200
+        scoreThreshold: 1500,
+        speedIncrease: 1.4
     },
     {
         name: "최마케팅팀장",
         message: "마케팅팀장이 출현했다! 화려하게 점수를 올려라! 📢",
-        speedIncrease: 400
+        scoreThreshold: 2000,
+        speedIncrease: 1.5
     },
     {
         name: "정인사팀장",
         message: "인사팀장이 출현했다! 팀워크로 승부해라! 👥",
-        speedIncrease: 800
+        scoreThreshold: 2500,
+        speedIncrease: 1.6
     },
     {
         name: "한재무팀장",
         message: "재무팀장이 출현했다! 효율적으로 점수를 쌓아라! 💰",
-        speedIncrease: 1600
+        scoreThreshold: 3000,
+        speedIncrease: 1.7
     },
     {
         name: "윤영업팀장",
         message: "영업팀장이 출현했다! 목표를 달성해라! 🎯",
-        speedIncrease: 3200
+        scoreThreshold: 3500,
+        speedIncrease: 1.8
     },
     {
         name: "강품질팀장",
         message: "품질팀장이 출현했다! 완벽한 라인을 만들어라! ✅",
-        speedIncrease: 6400
+        scoreThreshold: 4000,
+        speedIncrease: 1.9
     },
     {
         name: "조보안팀장",
         message: "보안팀장이 출현했다! 안전하게 게임을 진행해라! 🔒",
-        speedIncrease: 12800
+        scoreThreshold: 4500,
+        speedIncrease: 2.0
     },
     {
         name: "CEO",
         message: "CEO가 직접 출현했다! 최고의 성과를 보여라! 👑",
-        speedIncrease: 25600
+        scoreThreshold: 5000,
+        speedIncrease: 2.5
     }
 ];
 
@@ -79,8 +88,7 @@ let nextCanvas = document.getElementById('nextBlock');
 let nextCtx = nextCanvas.getContext('2d');
 let scoreElement = document.getElementById('score');
 let levelElement = document.getElementById('level');
-let startBtn = document.getElementById('startBtn');
-let pauseBtn = document.getElementById('pauseBtn');
+let startModal = document.getElementById('startModal');
 
 let score = 0;
 let level = 1;
@@ -88,7 +96,6 @@ let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
 let gameLoop;
 let currentPiece;
 let nextPiece;
-let isPaused = false;
 let gameOver = false;
 let highScore = localStorage.getItem('tetrisHighScore') || 0;
 let currentSpeed = 800;
@@ -98,7 +105,7 @@ let lastEventScore = 0;
 let dropInterval = 1000;
 
 // Google Apps Script 연동을 위한 설정
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEnJasgMFGnArS3a4B0F_KU8BgtFZ1eXrNm1qx6bb6E6t0h_CP1pVfG3QG4w-_wA9jbw/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5tTI1E3uydS0bbc6yWlV9ujkGw2MATvI5dEHK79Presoi58ehsU6wwxaOkJxpg9AViQ/exec';
 
 // 순위표 관리
 function getLeaderboard() {
@@ -108,20 +115,37 @@ function getLeaderboard() {
 
 function updateLeaderboard(playerName, score, level) {
     const leaderboard = getLeaderboard();
+    const totalScore = Math.round(score * (1 + (level - 1) * 0.1));
+    
     leaderboard.push({
         playerName,
         score,
         level,
+        totalScore,
         date: new Date().toLocaleDateString()
     });
-    localStorage.setItem('tetrisLeaderboard', JSON.stringify(leaderboard));
+    
+    // 총점 기준으로 정렬
+    leaderboard.sort((a, b) => b.totalScore - a.totalScore);
+    
+    // 상위 10개만 저장
+    localStorage.setItem('tetrisLeaderboard', JSON.stringify(leaderboard.slice(0, 10)));
 }
 
 function displayLeaderboard() {
     const leaderboard = getLeaderboard();
     let message = '🏆 순위표 TOP 10 🏆\n\n';
+    message += '[ 총점 계산방식 ]\n';
+    message += '기본점수 × (1 + (레벨-1) × 0.1)\n';
+    message += '예) 1000점, 레벨3 = 1000 × (1 + 0.2) = 1200점\n\n';
+    
     leaderboard.forEach((entry, index) => {
-        message += `${index + 1}. ${entry.playerName}: ${entry.score}점 (레벨 ${entry.level}) - ${entry.date}\n`;
+        const totalScore = Math.round(entry.score * (1 + (entry.level - 1) * 0.1));
+        message += `${index + 1}. ${entry.playerName}\n`;
+        message += `   기본점수: ${entry.score}점\n`;
+        message += `   레벨: ${entry.level} (보너스: +${((entry.level-1)*10)}%)\n`;
+        message += `   총점: ${totalScore}점\n`;
+        message += `   달성일: ${entry.date}\n\n`;
     });
     alert(message);
 }
@@ -161,25 +185,27 @@ function showEventNotification(leader) {
 
 // 팀장 이벤트 체크
 function checkTeamLeaderEvent() {
-    const eventThreshold = Math.floor(score / 100);
-    const lastEventThreshold = Math.floor(lastEventScore / 100);
-    
-    if (eventThreshold > lastEventThreshold && eventThreshold <= TEAM_LEADERS.length) {
-        const leader = TEAM_LEADERS[eventThreshold - 1];
-        showEventNotification(leader);
+    // 아직 등장하지 않은 팀장 중 현재 점수를 넘은 첫 번째 팀장을 찾음
+    const nextLeader = TEAM_LEADERS.find(leader => 
+        leader.scoreThreshold <= score && 
+        leader.scoreThreshold > lastEventScore
+    );
+
+    if (nextLeader) {
+        showEventNotification(nextLeader);
         
-        // 레벨 증가 - 현재 레벨에서 1 증가
+        // 레벨 증가
         level += 1;
         levelElement.textContent = level;
         
-        // 스피드 증가 - 현재 속도의 1.5배 (밀리초는 1/1.5)
-        currentSpeed = Math.max(100, Math.floor(currentSpeed / 1.5));
+        // 스피드 증가 - nextLeader.speedIncrease 배율만큼 증가
+        currentSpeed = Math.max(100, Math.floor(currentSpeed / nextLeader.speedIncrease));
         if (gameLoop) {
             clearInterval(gameLoop);
             gameLoop = setInterval(drop, currentSpeed);
         }
         
-        lastEventScore = score;
+        lastEventScore = nextLeader.scoreThreshold;
     }
 }
 
@@ -245,13 +271,96 @@ class Tetromino {
     }
 }
 
+// 게임 시작 함수
+function startGame() {
+    // 모달 숨기기
+    startModal.style.display = 'none';
+    
+    // 게임 초기화
+    init();
+    
+    // 이전 이벤트 리스너 제거
+    document.removeEventListener('keydown', handleKeyPress);
+    
+    // 키보드 이벤트 리스너 추가
+    document.addEventListener('keydown', handleKeyPress);
+    
+    // 게임 루프 시작
+    if (gameLoop) clearInterval(gameLoop);
+    gameLoop = setInterval(drop, currentSpeed);
+}
+
+// 키 입력 처리
+function handleKeyPress(event) {
+    if (!gameOver) {
+        switch(event.keyCode) {
+            case 37: // 왼쪽
+                if (isValidMove(-1, 0)) {
+                    currentPiece.x--;
+                }
+                break;
+            case 39: // 오른쪽
+                if (isValidMove(1, 0)) {
+                    currentPiece.x++;
+                }
+                break;
+            case 40: // 아래 (소프트 드롭)
+                if (isValidMove(0, 1)) {
+                    currentPiece.y++;
+                    score += 1; // 소프트 드롭 보너스
+                    scoreElement.textContent = score;
+                    checkTeamLeaderEvent();
+                }
+                break;
+            case 38: // 위
+                rotate();
+                break;
+            case 32: // 스페이스바 (하드 드롭)
+                let dropDistance = 0;
+                while(isValidMove(0, 1)) {
+                    currentPiece.y++;
+                    dropDistance++;
+                }
+                score += dropDistance * 2; // 하드 드롭 보너스
+                scoreElement.textContent = score;
+                checkTeamLeaderEvent();
+                freeze();
+                break;
+        }
+        draw();
+    }
+}
+
+// 게임 오버 처리
+function gameOverHandler() {
+    gameOver = true;
+    clearInterval(gameLoop);
+    gameLoop = null;
+    
+    // 최고 점수 업데이트
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('tetrisHighScore', highScore);
+    }
+    
+    // 점수 저장
+    saveScore();
+    
+    // 게임 오버 메시지 표시
+    const finalScore = Math.round(score * (1 + (level - 1) * 0.1));
+    alert(`게임 오버!\n최종 점수: ${score}점\n레벨 보너스 적용 총점: ${finalScore}점\n최고 기록: ${highScore}점`);
+    
+    // 모달 표시
+    startModal.style.display = 'flex';
+}
+
 // 게임 초기화
 function init() {
     board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
     score = 0;
-    level = 1;  // 시작 레벨
+    level = 1;
     gameOver = false;
-    currentSpeed = 800; // 시작 속도를 더 빠르게 설정 (1000ms -> 800ms)
+    currentSpeed = 800;
     lastEventScore = 0;
     scoreElement.textContent = score;
     levelElement.textContent = level;
@@ -264,13 +373,7 @@ function createNewPiece() {
     currentPiece = nextPiece || new Tetromino();
     nextPiece = new Tetromino();
     if (!isValidMove(0, 0)) {
-        gameOver = true;
-        clearInterval(gameLoop);
-        gameLoop = null;
-        saveScore();
-        setTimeout(() => {
-            alert(`게임 오버!\n점수: ${score}\n최고 점수: ${highScore}`);
-        }, 100);
+        gameOverHandler();
     }
 }
 
@@ -315,24 +418,23 @@ function clearLines() {
     }
 
     if (linesCleared > 0) {
-        const baseScore = linesCleared * 100;
-        const levelBonus = level * 50;
-        const comboBonus = linesCleared > 1 ? (linesCleared - 1) * 200 : 0;
-        score += baseScore + levelBonus + comboBonus;
+        // 점수 계산 개선
+        const baseScore = linesCleared * 100;  // 기본 점수: 한 줄당 100점
+        const levelBonus = level * 50;         // 레벨 보너스
+        const comboBonus = linesCleared > 1 ? Math.pow(2, linesCleared - 1) * 100 : 0;  // 콤보 보너스
+        
+        const totalBonus = baseScore + levelBonus + comboBonus;
+        score += totalBonus;
         scoreElement.textContent = score;
+        
+        // 최고 점수 업데이트
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('tetrisHighScore', highScore);
+        }
         
         // 팀장 이벤트 체크
         checkTeamLeaderEvent();
-        
-        if (score >= level * 1000) {
-            level++;
-            levelElement.textContent = level;
-            dropInterval = Math.max(100, 1000 - (level - 1) * 100);
-            if (gameLoop) {
-                clearInterval(gameLoop);
-                gameLoop = setInterval(drop, dropInterval);
-            }
-        }
     }
 }
 
@@ -351,7 +453,7 @@ function freeze() {
 
 // 테트리미노 드롭
 function drop() {
-    if (!isPaused && !gameOver) {
+    if (!gameOver) {
         if (isValidMove(0, 1)) {
             currentPiece.y++;
         } else {
@@ -410,150 +512,78 @@ function draw() {
     // 다음 블록 캔버스 클리어
     nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
     
-    // 다음 테트리미노 그리기 (중앙에)
-    const offsetX = Math.floor((3 - nextPiece.shape[0].length) / 2);
-    const offsetY = Math.floor((3 - nextPiece.shape.length) / 2);
+    // 다음 테트리미노 그리기 (왼쪽으로 3칸, 아래로 1칸 이동)
+    const blockSize = 30; // 블록 크기 정의
+    const offsetX = Math.floor((nextCanvas.width / blockSize - nextPiece.shape[0].length) / 2) - 3; // 왼쪽으로 3칸
+    const offsetY = Math.floor((nextCanvas.height / blockSize - nextPiece.shape.length) / 2) + 1;  // 아래로 1칸
+
+    // 격자 그리기
+    nextCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    nextCtx.lineWidth = 1;
+    for (let x = 0; x <= nextCanvas.width / blockSize; x++) {
+        nextCtx.beginPath();
+        nextCtx.moveTo(x * blockSize, 0);
+        nextCtx.lineTo(x * blockSize, nextCanvas.height);
+        nextCtx.stroke();
+    }
+    for (let y = 0; y <= nextCanvas.height / blockSize; y++) {
+        nextCtx.beginPath();
+        nextCtx.moveTo(0, y * blockSize);
+        nextCtx.lineTo(nextCanvas.width, y * blockSize);
+        nextCtx.stroke();
+    }
+
     nextPiece.draw(nextCtx, offsetX, offsetY);
 }
 
 // 점수 저장 (Google Apps Script 연동)
 async function saveScore() {
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('tetrisHighScore', highScore);
-    }
-
     try {
-        const playerName = prompt('이름을 입력하세요 (2-10자):') || '익명';
-        if (playerName.length < 2 || playerName.length > 10) {
-            throw new Error('이름은 2-10자 사이여야 합니다.');
+        const playerName = prompt('게임 종료! 이름을 입력하세요 (2-10자):', '');
+        if (!playerName || playerName.length < 2 || playerName.length > 10) {
+            alert('유효한 이름을 입력해주세요!');
+            return;
         }
 
-        // JSONP 방식으로 변경
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = GOOGLE_APPS_SCRIPT_URL;
-        form.target = 'hidden_iframe';
+        const totalScore = Math.round(score * (1 + (level - 1) * 0.1));
+        const scoreMessage = `게임 종료!\n\n` +
+            `기본점수: ${score}점\n` +
+            `레벨: ${level} (보너스: +${((level-1)*10)}%)\n` +
+            `최종 총점: ${totalScore}점\n\n` +
+            `수고하셨습니다! 🎮`;
+        
+        alert(scoreMessage);
 
-        const data = {
-            playerName: playerName.trim(),
-            score: Math.floor(score), // 정수로 변환
-            level: Math.floor(level), // 정수로 변환
+        const gameData = {
+            playerName,
+            score,
+            level,
             date: new Date().toISOString()
         };
 
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'data';
-        input.value = JSON.stringify(data);
-        form.appendChild(input);
+        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `data=${encodeURIComponent(JSON.stringify(gameData))}`
+        });
 
-        // Hidden iframe 생성 또는 재사용
-        let iframe = document.getElementById('hidden_iframe');
-        if (!iframe) {
-            iframe = document.createElement('iframe');
-            iframe.name = 'hidden_iframe';
-            iframe.id = 'hidden_iframe';
-            iframe.style.display = 'none';
-            document.body.appendChild(iframe);
-        }
-
-        // 폼 제출 후 응답 처리
-        iframe.onload = () => {
-            try {
-                // 순위표 데이터 가져오기
-                fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getRankings`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            let message = '🏆 순위표 TOP 10 🏆\n\n';
-                            data.data.forEach((row, index) => {
-                                const [rank, name, playerScore, date] = row;
-                                const formattedDate = new Date(date).toLocaleDateString();
-                                message += `${rank}. ${name}: ${playerScore}점 - ${formattedDate}\n`;
-                            });
-                            alert(message);
-                        } else {
-                            throw new Error('순위표 데이터를 가져오는데 실패했습니다.');
-                        }
-                    });
-            } catch (error) {
-                console.error('순위표 로딩 중 오류:', error);
-                alert(`점수는 저장되었지만 순위표를 불러오는데 실패했습니다.\n점수: ${score}`);
-            }
-        };
-
-        // 폼 제출
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-
+        // 로컬 순위표도 업데이트
+        updateLeaderboard(playerName, score, level);
+        
+        // 순위표 표시
+        displayLeaderboard();
+        
     } catch (error) {
-        console.error('점수 저장 중 오류:', error);
-        alert(`점수 저장에 실패했습니다.\n임시 저장된 최고점수: ${highScore}\n오류: ${error.message}`);
+        console.error('점수 저장 중 오류 발생:', error);
+        alert('점수 저장에 실패했습니다. 나중에 다시 시도해주세요.');
     }
 }
 
-// 키보드 이벤트 처리
-document.addEventListener('keydown', event => {
-    if (!isPaused && !gameOver) {
-        switch(event.key) {
-            case 'ArrowLeft':
-                if (isValidMove(-1, 0)) {
-                    currentPiece.x--;
-                    draw();
-                }
-                break;
-            case 'ArrowRight':
-                if (isValidMove(1, 0)) {
-                    currentPiece.x++;
-                    draw();
-                }
-                break;
-            case 'ArrowDown':
-                if (isValidMove(0, 1)) {
-                    currentPiece.y++;
-                    score += 2;
-                    scoreElement.textContent = score;
-                    checkTeamLeaderEvent();
-                    draw();
-                }
-                break;
-            case 'ArrowUp':
-                rotate();
-                draw();
-                break;
-            case ' ':
-                while(isValidMove(0, 1)) {
-                    currentPiece.y++;
-                    score += 2;
-                }
-                scoreElement.textContent = score;
-                checkTeamLeaderEvent();
-                draw();
-                break;
-        }
-    }
-});
-
-// 게임 시작
-startBtn.addEventListener('click', () => {
-    if (gameOver) {
-        init();
-    }
-    if (!gameLoop) {
-        gameLoop = setInterval(drop, currentSpeed);
-        isPaused = false;
-        startBtn.textContent = '재시작';
-        pauseBtn.textContent = '일시정지';
-    }
-});
-
-// 일시정지
-pauseBtn.addEventListener('click', () => {
-    isPaused = !isPaused;
-    pauseBtn.textContent = isPaused ? '계속하기' : '일시정지';
-});
-
-// 게임 초기화
-init(); 
+// 페이지 로드 시 자동으로 모달 표시
+window.onload = function() {
+    startModal.style.display = 'flex';
+    draw(); // 초기 게임 보드 그리기
+}; 
