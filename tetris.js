@@ -141,6 +141,10 @@ function checkTeamLeaderEvent() {
         const leader = TEAM_LEADERS[eventThreshold - 1];
         showEventNotification(leader);
         
+        // 레벨 증가
+        level = eventThreshold + 1;
+        levelElement.textContent = level;
+        
         // 스피드 증가
         currentSpeed = Math.max(100, 1000 - leader.speedIncrease);
         if (gameLoop) {
@@ -218,7 +222,7 @@ class Tetromino {
 function init() {
     board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
     score = 0;
-    level = 1;
+    level = 1;  // 시작 레벨
     gameOver = false;
     currentSpeed = 1000;
     lastEventScore = 0;
