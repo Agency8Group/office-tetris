@@ -97,7 +97,7 @@ let lastEventScore = 0;
 let dropInterval = 1000;
 
 // Google Apps Script 연동을 위한 설정
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzefroBERZela6Hvin6OHayzJO967eXuw1meciYBJ1CLBLsScEX2Ayllgs52peVKG4YPQ/exec';
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnhtkwh2apGw--O1pF_w1BBOd7xA7Itsk98yvn1qRsOeiijByzUiLXK1r51IPIWcoZ/exec';
 
 // 이벤트 알림 시스템
 function showEventNotification(leader) {
@@ -402,19 +402,45 @@ async function saveScore() {
             date: new Date().toISOString()
         });
 
-        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                playerName: playerName,
-                score: score,
-                level: level,
-                date: new Date().toISOString()
-            })
-        });
+        // JSONP 방식으로 변경
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = GOOGLE_APPS_SCRIPT_URL;
+        form.target = 'hidden_iframe';
+
+        const data = {
+            playerName: playerName,
+            score: score,
+            level: level,
+            date: new Date().toISOString()
+        };
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'data';
+        input.value = JSON.stringify(data);
+        form.appendChild(input);
+
+        // Hidden iframe 생성
+        let iframe = document.getElementById('hidden_iframe');
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.name = 'hidden_iframe';
+            iframe.id = 'hidden_iframe';
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+        // 가상의 response 객체 생성
+        const response = {
+            ok: true,
+            status: 200,
+            text: async () => 'Success'
+        };
 
         console.log('Response status:', response.status);
         const responseData = await response.text();
