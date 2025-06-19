@@ -97,7 +97,7 @@ let lastEventScore = 0;
 // 게임 속도 (ms)
 let dropInterval = 1000;
 
-// Google Apps Script 연동을 위한 설정
+// Google Apps Script 웹앱 URL
 const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5tTI1E3uydS0bbc6yWlV9ujkGw2MATvI5dEHK79Presoi58ehsU6wwxaOkJxpg9AViQ/exec';
 
 // DOM 요소 초기화
@@ -109,6 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
     scoreElement = document.getElementById('score');
     levelElement = document.getElementById('level');
     startModal = document.getElementById('startModal');
+
+    // 초기 게임 보드 그리기
+    draw();
 });
 
 // 순위표 관리
@@ -319,7 +322,7 @@ function startGame() {
 }
 
 // 키보드 입력 처리
-async function handleKeyPress(event) {
+function handleKeyPress(event) {
     if (!gameOver) {
         switch(event.keyCode) {
             case 37: // 왼쪽
@@ -352,7 +355,7 @@ async function handleKeyPress(event) {
                 score += dropDistance * 2; // 하드 드롭 보너스
                 scoreElement.textContent = score;
                 checkTeamLeaderEvent();
-                await freeze();
+                freeze();
                 break;
         }
         draw();
@@ -360,7 +363,7 @@ async function handleKeyPress(event) {
 }
 
 // 게임 오버 처리
-async function gameOverHandler() {
+function gameOverHandler() {
     gameOver = true;
     clearInterval(gameLoop);
     gameLoop = null;
@@ -371,12 +374,8 @@ async function gameOverHandler() {
         localStorage.setItem('tetrisHighScore', highScore);
     }
     
-    // 점수 저장 및 순위표 표시
-    await saveScore();
-    
-    // 게임 오버 메시지 표시
-    const finalScore = Math.round(score * (1 + (level - 1) * 0.1));
-    alert(`게임 오버!\n최종 점수: ${score}점\n레벨 보너스 적용 총점: ${finalScore}점\n최고 기록: ${highScore}점`);
+    // 점수 저장
+    saveScore();
     
     // 모달 표시
     startModal.style.display = 'flex';
@@ -397,11 +396,11 @@ function init() {
 }
 
 // 새로운 테트리미노 생성
-async function createNewPiece() {
+function createNewPiece() {
     currentPiece = nextPiece || new Tetromino();
     nextPiece = new Tetromino();
     if (!isValidMove(0, 0)) {
-        await gameOverHandler();
+        gameOverHandler();
     }
 }
 
@@ -467,7 +466,7 @@ function clearLines() {
 }
 
 // 테트리미노 고정
-async function freeze() {
+function freeze() {
     currentPiece.shape.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value) {
@@ -476,16 +475,16 @@ async function freeze() {
         });
     });
     clearLines();
-    await createNewPiece();
+    createNewPiece();
 }
 
 // 테트리미노 드롭
-async function drop() {
+function drop() {
     if (!gameOver) {
         if (isValidMove(0, 1)) {
             currentPiece.y++;
         } else {
-            await freeze();
+            freeze();
         }
         draw();
     }
@@ -567,70 +566,53 @@ function draw() {
 // 점수 저장 (Google Apps Script 연동)
 async function saveScore() {
     try {
-        const playerName = prompt('게임 종료! 이름을 입력하세요 (2-10자):', '');
+        const playerName = prompt('🎮 게임 결과 🎮\n\n이름을 입력하세요 (2-10자):', '');
         if (!playerName || playerName.length < 2 || playerName.length > 10) {
-            alert('유효한 이름을 입력해주세요!');
+            alert('⚠️ 유효한 이름을 입력해주세요! (2-10자)');
             return;
         }
 
         const totalScore = Math.round(score * (1 + (level - 1) * 0.1));
-        const scoreMessage = `게임 종료!\n\n` +
-            `기본점수: ${score}점\n` +
-            `레벨: ${level} (보너스: +${((level-1)*10)}%)\n` +
-            `최종 총점: ${totalScore}점\n\n` +
-            `수고하셨습니다! 🎮`;
+        const bonusPercent = ((level-1) * 10);
         
+        const scoreMessage = 
+            '🎮 테트리스 게임 결과 🎮\n' +
+            '━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            `🏆 최종 점수: ${totalScore}점\n\n` +
+            `📊 상세 정보\n` +
+            `기본 점수: ${score}점\n` +
+            `달성 레벨: ${level}\n` +
+            `레벨 보너스: +${bonusPercent}%\n\n` +
+            '━━━━━━━━━━━━━━━━━━━━━\n' +
+            `🌟 수고하셨습니다! 🌟`;
+
         alert(scoreMessage);
 
-        // API 요청 데이터
-        const gameData = {
-            name: playerName,        // playerName -> name으로 변경
+        // API 호출
+        const formData = new URLSearchParams();
+        formData.append('data', JSON.stringify({
+            playerName: playerName,
             score: score,
             level: level,
             date: new Date().toISOString()
-        };
+        }));
 
-        // API 호출
-        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+        await fetch(GOOGLE_APPS_SCRIPT_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify(gameData)
+            body: formData.toString()
         });
 
-        const result = await response.json();
-
-        // API 응답 처리
-        if (result.status === 'success') {
-            // 순위표 업데이트 성공
-            console.log('점수가 성공적으로 저장되었습니다.');
-            console.log('총점:', result.data.totalScore);
-            console.log('현재 순위:', result.data.rank);
-            
-            // 로컬 순위표 업데이트
-            updateLeaderboard(playerName, score, level);
-            
-            // 순위표 표시
-            displayLeaderboard();
-        } else {
-            // API 에러 발생 - localStorage로 폴백
-            console.warn('API 저장 실패:', result.message);
-            updateLeaderboard(playerName, score, level);
-            displayLeaderboard();
-        }
+        console.log('점수가 저장되었습니다.');
         
     } catch (error) {
-        // 네트워크 에러 등 - localStorage로 폴백
         console.error('점수 저장 중 오류 발생:', error);
-        updateLeaderboard(playerName, score, level);
-        displayLeaderboard();
-        alert('온라인 순위표 저장에 실패했습니다. 로컬에만 저장됩니다.');
     }
 }
 
 // 페이지 로드 시 자동으로 모달 표시
 window.onload = function() {
     startModal.style.display = 'flex';
-    draw(); // 초기 게임 보드 그리기
 }; 
