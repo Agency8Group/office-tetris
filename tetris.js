@@ -19,6 +19,7 @@ const SHAPES = [
 
 // 팀장 이벤트 시스템
 const TEAM_LEADERS = [
+    // 원래 50>60>70>80
     {
         name: "김개발팀장",
         message: "개발팀장이 출현했다! 코드처럼 빠르게 움직여라! 💻",
@@ -27,47 +28,47 @@ const TEAM_LEADERS = [
     {
         name: "박디자인팀장", 
         message: "디자인팀장이 출현했다! 아름다운 조화를 만들어라! 🎨",
-        speedIncrease: 60
+        speedIncrease: 100
     },
     {
         name: "이기획팀장",
         message: "기획팀장이 출현했다! 전략적으로 블록을 배치해라! 📋",
-        speedIncrease: 70
+        speedIncrease: 200
     },
     {
         name: "최마케팅팀장",
         message: "마케팅팀장이 출현했다! 화려하게 점수를 올려라! 📢",
-        speedIncrease: 80
+        speedIncrease: 400
     },
     {
         name: "정인사팀장",
         message: "인사팀장이 출현했다! 팀워크로 승부해라! 👥",
-        speedIncrease: 90
+        speedIncrease: 800
     },
     {
         name: "한재무팀장",
         message: "재무팀장이 출현했다! 효율적으로 점수를 쌓아라! 💰",
-        speedIncrease: 100
+        speedIncrease: 1600
     },
     {
         name: "윤영업팀장",
         message: "영업팀장이 출현했다! 목표를 달성해라! 🎯",
-        speedIncrease: 120
+        speedIncrease: 3200
     },
     {
         name: "강품질팀장",
         message: "품질팀장이 출현했다! 완벽한 라인을 만들어라! ✅",
-        speedIncrease: 140
+        speedIncrease: 6400
     },
     {
         name: "조보안팀장",
         message: "보안팀장이 출현했다! 안전하게 게임을 진행해라! 🔒",
-        speedIncrease: 160
+        speedIncrease: 12800
     },
     {
         name: "CEO",
         message: "CEO가 직접 출현했다! 최고의 성과를 보여라! 👑",
-        speedIncrease: 200
+        speedIncrease: 25600
     }
 ];
 
@@ -90,7 +91,7 @@ let nextPiece;
 let isPaused = false;
 let gameOver = false;
 let highScore = localStorage.getItem('tetrisHighScore') || 0;
-let currentSpeed = 1000;
+let currentSpeed = 800;
 let lastEventScore = 0;
 
 // 게임 속도 (ms)
@@ -98,6 +99,32 @@ let dropInterval = 1000;
 
 // Google Apps Script 연동을 위한 설정
 const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnhtkwh2apGw--O1pF_w1BBOd7xA7Itsk98yvn1qRsOeiijByzUiLXK1r51IPIWcoZ/exec';
+
+// 순위표 관리
+function getLeaderboard() {
+    const leaderboard = JSON.parse(localStorage.getItem('tetrisLeaderboard') || '[]');
+    return leaderboard.sort((a, b) => b.score - a.score).slice(0, 10); // 상위 10개만
+}
+
+function updateLeaderboard(playerName, score, level) {
+    const leaderboard = getLeaderboard();
+    leaderboard.push({
+        playerName,
+        score,
+        level,
+        date: new Date().toLocaleDateString()
+    });
+    localStorage.setItem('tetrisLeaderboard', JSON.stringify(leaderboard));
+}
+
+function displayLeaderboard() {
+    const leaderboard = getLeaderboard();
+    let message = '🏆 순위표 TOP 10 🏆\n\n';
+    leaderboard.forEach((entry, index) => {
+        message += `${index + 1}. ${entry.playerName}: ${entry.score}점 (레벨 ${entry.level}) - ${entry.date}\n`;
+    });
+    alert(message);
+}
 
 // 이벤트 알림 시스템
 function showEventNotification(leader) {
@@ -145,8 +172,8 @@ function checkTeamLeaderEvent() {
         level += 1;
         levelElement.textContent = level;
         
-        // 스피드 증가
-        currentSpeed = Math.max(100, 1000 - leader.speedIncrease);
+        // 스피드 증가 - 현재 속도의 1.5배 (밀리초는 1/1.5)
+        currentSpeed = Math.max(100, Math.floor(currentSpeed / 1.5));
         if (gameLoop) {
             clearInterval(gameLoop);
             gameLoop = setInterval(drop, currentSpeed);
@@ -224,7 +251,7 @@ function init() {
     score = 0;
     level = 1;  // 시작 레벨
     gameOver = false;
-    currentSpeed = 1000;
+    currentSpeed = 800; // 시작 속도를 더 빠르게 설정 (1000ms -> 800ms)
     lastEventScore = 0;
     scoreElement.textContent = score;
     levelElement.textContent = level;
@@ -389,75 +416,19 @@ function draw() {
     nextPiece.draw(nextCtx, offsetX, offsetY);
 }
 
-// 점수 저장 (Google Apps Script 연동)
+// 점수 저장
 async function saveScore() {
     if (score > highScore) {
         highScore = score;
         localStorage.setItem('tetrisHighScore', highScore);
     }
 
-    // Google Apps Script로 점수 전송
     try {
         const playerName = prompt('이름을 입력하세요:') || '익명';
-        console.log('Sending score to Google Sheets...', {
-            playerName,
-            score,
-            level,
-            date: new Date().toISOString()
-        });
-
-        // JSONP 방식으로 변경
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = GOOGLE_APPS_SCRIPT_URL;
-        form.target = 'hidden_iframe';
-
-        const data = {
-            playerName: playerName,
-            score: score,
-            level: level,
-            date: new Date().toISOString()
-        };
-
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'data';
-        input.value = JSON.stringify(data);
-        form.appendChild(input);
-
-        // Hidden iframe 생성
-        let iframe = document.getElementById('hidden_iframe');
-        if (!iframe) {
-            iframe = document.createElement('iframe');
-            iframe.name = 'hidden_iframe';
-            iframe.id = 'hidden_iframe';
-            iframe.style.display = 'none';
-            document.body.appendChild(iframe);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-
-        // 가상의 response 객체 생성
-        const response = {
-            ok: true,
-            status: 200,
-            text: async () => 'Success'
-        };
-
-        console.log('Response status:', response.status);
-        const responseData = await response.text();
-        console.log('Response data:', responseData);
-
-        if (response.ok) {
-            alert(`점수가 저장되었습니다!\n플레이어: ${playerName}\n점수: ${score}`);
-        } else {
-            throw new Error('점수 저장 실패');
-        }
+        updateLeaderboard(playerName, score, level);
+        displayLeaderboard();
     } catch (error) {
         console.error('점수 저장 중 오류:', error);
-        // 오류가 발생해도 게임은 계속할 수 있도록 함
         alert(`점수 저장에 실패했습니다.\n임시 저장된 최고점수: ${highScore}`);
     }
 }
