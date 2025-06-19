@@ -22,6 +22,9 @@ function validateGameData(data) {
   if (!Date.parse(data.date)) {
     throw new Error('날짜가 유효하지 않습니다.');
   }
+  if (!Number.isInteger(data.totalScore) || data.totalScore < 0) {
+    throw new Error('총점이 유효하지 않습니다.');
+  }
 }
 
 // 스프레드시트 초기 설정
@@ -32,7 +35,7 @@ function setupSpreadsheet() {
   let dataSheet = ss.getSheetByName('게임데이터');
   if (!dataSheet) {
     dataSheet = ss.insertSheet('게임데이터');
-    dataSheet.getRange('A1:D1').setValues([['플레이어명', '점수', '레벨', '날짜']]);
+    dataSheet.getRange('A1:E1').setValues([['플레이어명', '점수', '레벨', '총점', '날짜']]);
     dataSheet.setFrozenRows(1);
   }
   
@@ -40,7 +43,7 @@ function setupSpreadsheet() {
   let rankSheet = ss.getSheetByName('순위표');
   if (!rankSheet) {
     rankSheet = ss.insertSheet('순위표');
-    rankSheet.getRange('A1:D1').setValues([['순위', '플레이어명', '최고점수', '달성일']]);
+    rankSheet.getRange('A1:E1').setValues([['순위', '플레이어명', '최고점수', '총점', '달성일']]);
     rankSheet.setFrozenRows(1);
   }
   
@@ -63,13 +66,14 @@ function doPost(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName('게임데이터');
     if (!sheet) {
-      ss.insertSheet('게임데이터').getRange('A1:D1').setValues([['플레이어명', '점수', '레벨', '날짜']]);
+      ss.insertSheet('게임데이터').getRange('A1:E1').setValues([['플레이어명', '점수', '레벨', '총점', '날짜']]);
     }
     
     sheet.appendRow([
       data.playerName,
       data.score,
       data.level,
+      data.totalScore,
       new Date(data.date)
     ]);
     
@@ -131,20 +135,20 @@ function updateRankings(ss, newData) {
   
   if (playerIndex === -1) {
     // 새로운 플레이어
-    rankings.push([rankings.length + 1, newData.playerName, newData.score, new Date(newData.date)]);
-  } else if (rankings[playerIndex][2] < newData.score) {
-    // 기존 기록 갱신
-    rankings[playerIndex] = [playerIndex + 1, newData.playerName, newData.score, new Date(newData.date)];
+    rankings.push([rankings.length + 1, newData.playerName, newData.score, newData.totalScore, new Date(newData.date)]);
+  } else if (rankings[playerIndex][3] < newData.totalScore) {
+    // 기존 기록 갱신 (총점 기준으로 변경)
+    rankings[playerIndex] = [playerIndex + 1, newData.playerName, newData.score, newData.totalScore, new Date(newData.date)];
   }
   
-  // 점수순으로 정렬 및 순위 재계산
-  rankings.sort((a, b) => b[2] - a[2])
+  // 총점순으로 정렬 및 순위 재계산
+  rankings.sort((a, b) => b[3] - a[3])
          .forEach((row, index) => row[0] = index + 1);
   
   // 순위표 업데이트
-  rankSheet.getRange(2, 1, rankSheet.getLastRow()-1, 4).clearContent();
+  rankSheet.getRange(2, 1, rankSheet.getLastRow()-1, 5).clearContent();
   if (rankings.length > 0) {
-    rankSheet.getRange(2, 1, rankings.length, 4).setValues(rankings);
+    rankSheet.getRange(2, 1, rankings.length, 5).setValues(rankings);
   }
 }
 
@@ -159,10 +163,10 @@ function sortRankings() {
   
   if (rankings.length === 0) return;
   
-  // 점수순으로 정렬 및 순위 재계산
-  rankings.sort((a, b) => b[2] - a[2])
+  // 총점순으로 정렬 및 순위 재계산
+  rankings.sort((a, b) => b[3] - a[3])
          .forEach((row, index) => row[0] = index + 1);
   
   // 순위표 업데이트
-  rankSheet.getRange(2, 1, rankings.length, 4).setValues(rankings);
+  rankSheet.getRange(2, 1, rankings.length, 5).setValues(rankings);
 }

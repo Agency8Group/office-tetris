@@ -565,50 +565,41 @@ function draw() {
 
 // 점수 저장 (Google Apps Script 연동)
 async function saveScore() {
+    const playerName = prompt('게임 종료!\n\n이름을 입력하세요 (2-10자):', '');
+    
+    if (!playerName || playerName.length < 2 || playerName.length > 10) {
+        alert('유효하지 않은 이름입니다. 점수가 저장되지 않았습니다.');
+        return;
+    }
+
+    const totalScore = Math.round(score * (1 + (level - 1) * 0.1));
+    
     try {
-        const playerName = prompt('🎮 게임 결과 🎮\n\n이름을 입력하세요 (2-10자):', '');
-        if (!playerName || playerName.length < 2 || playerName.length > 10) {
-            alert('⚠️ 유효한 이름을 입력해주세요! (2-10자)');
-            return;
-        }
-
-        const totalScore = Math.round(score * (1 + (level - 1) * 0.1));
-        const bonusPercent = ((level-1) * 10);
-        
-        const scoreMessage = 
-            '🎮 테트리스 게임 결과 🎮\n' +
-            '━━━━━━━━━━━━━━━━━━━━━\n\n' +
-            `🏆 최종 점수: ${totalScore}점\n\n` +
-            `📊 상세 정보\n` +
-            `기본 점수: ${score}점\n` +
-            `달성 레벨: ${level}\n` +
-            `레벨 보너스: +${bonusPercent}%\n\n` +
-            '━━━━━━━━━━━━━━━━━━━━━\n' +
-            `🌟 수고하셨습니다! 🌟`;
-
-        alert(scoreMessage);
-
-        // API 호출
-        const formData = new URLSearchParams();
-        formData.append('data', JSON.stringify({
-            playerName: playerName,
-            score: score,
-            level: level,
-            date: new Date().toISOString()
-        }));
-
-        await fetch(GOOGLE_APPS_SCRIPT_URL, {
+        // Google Apps Script에 점수 저장
+        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
             method: 'POST',
+            mode: 'no-cors',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: formData.toString()
+            body: `data=${encodeURIComponent(JSON.stringify({
+                playerName,
+                score,
+                level,
+                totalScore,
+                date: new Date().toISOString()
+            }))}`
         });
 
-        console.log('점수가 저장되었습니다.');
+        // 로컬 순위표도 업데이트
+        updateLeaderboard(playerName, score, level);
+        
+        // 순위표 표시
+        await displayLeaderboard();
         
     } catch (error) {
         console.error('점수 저장 중 오류 발생:', error);
+        alert('점수 저장에 실패했습니다. 나중에 다시 시도해주세요.');
     }
 }
 
