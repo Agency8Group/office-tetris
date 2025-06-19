@@ -384,7 +384,7 @@
         <!-- 시작 모달 -->
         <div class="start-modal" id="startModal">
             <div class="modal-content">
-                <h2>🎮 오피스 테트리스 🎮</h2>
+                <h2>🎮 오피스 테트리스ver.12>
                 <div class="instructions">
                     <h3>게임 설명</h3>
                     <ul>
@@ -400,9 +400,7 @@
                         <li>높은 레벨일수록 점수 보너스!</li>
                     </ul>
                 </div>
-                <button class="start-btn" onclick="startGame()">
-                    게임 시작!
-                </button>
+                <button class="start-btn">게임 시작!</button>
             </div>
         </div>
 
@@ -431,5 +429,19 @@
             </div>
         </div>
         <script src="tetris.js"></script>
+        <script>
+            window.onload = function () {
+                // 시작 버튼에 이벤트 리스너 추가
+                document
+                    .querySelector(".start-btn")
+                    .addEventListener("click", function () {
+                        if (typeof startGame === "function") {
+                            startGame();
+                        } else {
+                            console.error("startGame function not found");
+                        }
+                    });
+            };
+        </script>
     </body>
 </html>
