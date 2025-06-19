@@ -112,17 +112,37 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // 순위표 관리
-function getLeaderboard() {
-    const leaderboard = JSON.parse(localStorage.getItem('tetrisLeaderboard') || '[]');
-    return leaderboard.sort((a, b) => b.score - a.score).slice(0, 10); // 상위 10개만
+async function getLeaderboard() {
+    try {
+        // Google Apps Script에서 순위표 데이터 가져오기
+        const response = await fetch(GOOGLE_APPS_SCRIPT_URL);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            return result.data; // Google Sheets의 데이터 반환
+        } else {
+            console.warn('순위표 데이터를 가져오는데 실패했습니다:', result.message);
+            // 실패 시 로컬 데이터로 폴백
+            return JSON.parse(localStorage.getItem('tetrisLeaderboard') || '[]')
+                .sort((a, b) => b.totalScore - a.totalScore)
+                .slice(0, 10);
+        }
+    } catch (error) {
+        console.error('순위표 데이터를 가져오는 중 오류 발생:', error);
+        // 에러 시 로컬 데이터로 폴백
+        return JSON.parse(localStorage.getItem('tetrisLeaderboard') || '[]')
+            .sort((a, b) => b.totalScore - a.totalScore)
+            .slice(0, 10);
+    }
 }
 
 function updateLeaderboard(playerName, score, level) {
-    const leaderboard = getLeaderboard();
+    // 로컬 순위표 업데이트 (API 실패 시를 대비한 백업)
+    const leaderboard = JSON.parse(localStorage.getItem('tetrisLeaderboard') || '[]');
     const totalScore = Math.round(score * (1 + (level - 1) * 0.1));
     
     leaderboard.push({
-        playerName,
+        name: playerName,
         score,
         level,
         totalScore,
@@ -136,21 +156,25 @@ function updateLeaderboard(playerName, score, level) {
     localStorage.setItem('tetrisLeaderboard', JSON.stringify(leaderboard.slice(0, 10)));
 }
 
-function displayLeaderboard() {
-    const leaderboard = getLeaderboard();
-    let message = '🏆 순위표 TOP 3 🏆\n\n';
+async function displayLeaderboard() {
+    const rankings = await getLeaderboard();
+    let message = '🏆 순위표 TOP 10 🏆\n\n';
     message += '[ 총점 계산방식 ]\n';
     message += '기본점수 × (1 + (레벨-1) × 0.1)\n';
     message += '예) 1000점, 레벨3 = 1000 × (1 + 0.2) = 1200점\n\n';
     
-    leaderboard.forEach((entry, index) => {
-        const totalScore = Math.round(entry.score * (1 + (entry.level - 1) * 0.1));
-        message += `${index + 1}. ${entry.playerName}\n`;
-        message += `   기본점수: ${entry.score}점\n`;
-        message += `   레벨: ${entry.level} (보너스: +${((entry.level-1)*10)}%)\n`;
-        message += `   총점: ${totalScore}점\n`;
-        message += `   달성일: ${entry.date}\n\n`;
-    });
+    if (rankings.length === 0) {
+        message += '아직 기록이 없습니다!';
+    } else {
+        rankings.forEach((entry, index) => {
+            message += `${index + 1}. ${entry.name || entry.playerName}\n`;  // name 또는 playerName 사용
+            message += `   기본점수: ${entry.score}점\n`;
+            message += `   레벨: ${entry.level} (보너스: +${((entry.level-1)*10)}%)\n`;
+            message += `   총점: ${entry.totalScore}점\n`;
+            message += `   달성일: ${new Date(entry.date).toLocaleDateString()}\n\n`;
+        });
+    }
+    
     alert(message);
 }
 
