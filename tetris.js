@@ -318,8 +318,8 @@ function startGame() {
     gameLoop = setInterval(drop, currentSpeed);
 }
 
-// 키 입력 처리
-function handleKeyPress(event) {
+// 키보드 입력 처리
+async function handleKeyPress(event) {
     if (!gameOver) {
         switch(event.keyCode) {
             case 37: // 왼쪽
@@ -352,7 +352,7 @@ function handleKeyPress(event) {
                 score += dropDistance * 2; // 하드 드롭 보너스
                 scoreElement.textContent = score;
                 checkTeamLeaderEvent();
-                freeze();
+                await freeze();
                 break;
         }
         draw();
@@ -360,7 +360,7 @@ function handleKeyPress(event) {
 }
 
 // 게임 오버 처리
-function gameOverHandler() {
+async function gameOverHandler() {
     gameOver = true;
     clearInterval(gameLoop);
     gameLoop = null;
@@ -371,8 +371,8 @@ function gameOverHandler() {
         localStorage.setItem('tetrisHighScore', highScore);
     }
     
-    // 점수 저장
-    saveScore();
+    // 점수 저장 및 순위표 표시
+    await saveScore();
     
     // 게임 오버 메시지 표시
     const finalScore = Math.round(score * (1 + (level - 1) * 0.1));
@@ -397,11 +397,11 @@ function init() {
 }
 
 // 새로운 테트리미노 생성
-function createNewPiece() {
+async function createNewPiece() {
     currentPiece = nextPiece || new Tetromino();
     nextPiece = new Tetromino();
     if (!isValidMove(0, 0)) {
-        gameOverHandler();
+        await gameOverHandler();
     }
 }
 
@@ -467,7 +467,7 @@ function clearLines() {
 }
 
 // 테트리미노 고정
-function freeze() {
+async function freeze() {
     currentPiece.shape.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value) {
@@ -476,16 +476,16 @@ function freeze() {
         });
     });
     clearLines();
-    createNewPiece();
+    await createNewPiece();
 }
 
 // 테트리미노 드롭
-function drop() {
+async function drop() {
     if (!gameOver) {
         if (isValidMove(0, 1)) {
             currentPiece.y++;
         } else {
-            freeze();
+            await freeze();
         }
         draw();
     }
