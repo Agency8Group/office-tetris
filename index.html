@@ -536,6 +536,22 @@
                 box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3),
                     0 4px 12px rgba(118, 75, 162, 0.2);
             }
+
+            .spinner {
+                border: 4px solid rgba(102, 126, 234, 0.2);
+                border-radius: 50%;
+                border-top-color: #667eea;
+                width: 50px;
+                height: 50px;
+                animation: spin 1s linear infinite;
+                margin: 30px auto 0;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
         </style>
     </head>
     <body>
@@ -561,6 +577,21 @@
                     </ul>
                 </div>
                 <button class="start-btn">게임 시작!</button>
+            </div>
+        </div>
+
+        <!-- 점수 저장 중 모달 -->
+        <div
+            class="start-modal"
+            id="savingModal"
+            style="display: none; z-index: 1001"
+        >
+            <div class="modal-content">
+                <h2 id="savingStatusTitle">점수 저장 중...</h2>
+                <p id="savingStatusMessage" style="margin-top: 20px">
+                    서버에 점수를 기록하고 있습니다. 잠시만 기다려주세요.
+                </p>
+                <div class="spinner" style="margin-top: 30px"></div>
             </div>
         </div>
 

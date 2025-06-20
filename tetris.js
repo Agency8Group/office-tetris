@@ -33,7 +33,7 @@ const TEAM_LEADERS = [
         scoreThreshold: 500,
         speedIncrease: 1.2,
         type: 'gif',
-        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNiZjFib3kxenAzajZjN3RwNjB3bnVxdnRhcTNtaXlib3EyMHBrdTliNiZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/33zX3zllJBGY8/giphy.gif'
+        image: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZDB5ZmUwcDQ0OXp4czFsdWpqYWhienM4Mmg1amI2eXFhZWNwMHl2NiZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/26BoDycSSoDAlwDII/giphy.gif'
     },
     {
         name: "윤성규 파트장",
@@ -102,7 +102,7 @@ const TEAM_LEADERS = [
 ];
 
 // 게임 변수
-let canvas, ctx, nextCanvas, nextCtx, scoreElement, levelElement, startModal;
+let canvas, ctx, nextCanvas, nextCtx, scoreElement, levelElement, startModal, savingModal;
 let score = 0;
 let level = 1;
 let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
     scoreElement = document.getElementById('score');
     levelElement = document.getElementById('level');
     startModal = document.getElementById('startModal');
+    savingModal = document.getElementById('savingModal');
 
     // 임시 저장된 점수 재시도
     retryTempScores();
@@ -216,7 +217,7 @@ function showEventNotification(leader) {
         existingNotification.remove();
     }
 
-    const imageElement = `<img src="${leader.image}" alt="${leader.name}" style="width: 250px; height: 250px; object-fit: cover; border-radius: 15px; margin: 0 auto; display: block;">`;
+    const imageElement = `<img src="${leader.image}" alt="${leader.name}" style="width: 300px; height: 300px; object-fit: cover; border-radius: 15px; margin: 0 auto; display: block;">`;
 
     // 새 알림 생성
     const notification = document.createElement('div');
@@ -359,7 +360,7 @@ function startGame() {
 }
 
 function gameEngine(time = 0) {
-    if (gameOver) {
+    if (gameOver || isPaused) {
         return;
     }
 
@@ -502,8 +503,8 @@ function clearLines() {
     if (linesCleared > 0) {
         // 점수 계산 개선
         const baseScore = linesCleared * 100;  // 기본 점수: 한 줄당 100점
-        const levelBonus = level * 50;         // 레벨 보너스
-        const comboBonus = linesCleared > 1 ? Math.pow(2, linesCleared - 1) * 100 : 0;  // 콤보 보너스
+        const levelBonus = Math.min(level * 10, 100);  // 레벨 보너스 (최대 100점)
+        const comboBonus = linesCleared > 1 ? (linesCleared - 1) * 50 : 0;  // 콤보 보너스 (선형 증가)
         
         const totalBonus = baseScore + levelBonus + comboBonus;
         score += totalBonus;
@@ -541,8 +542,6 @@ function drop() {
             return;
         }
         freeze();
-        clearLines();
-        createNewPiece();
     } else {
         currentPiece.y++;
     }
@@ -629,17 +628,15 @@ async function saveScore() {
 
         while (!isValidName) {
             playerName = prompt('🎮 게임 결과 🎮\n\n이름을 입력하세요 (2-10자):', '');
-            
-            // 취소 버튼을 눌렀을 때
+
             if (playerName === null) {
-                const confirmQuit = confirm('게임 기록을 저장하지 않고 나가시겠습니까?');
-                if (confirmQuit) {
+                if (confirm('게임 기록을 저장하지 않고 나가시겠습니까?')) {
+                    startModal.style.display = 'flex';
                     return;
                 }
                 continue;
             }
 
-            // 이름 유효성 검사
             if (playerName.length < 2 || playerName.length > 10) {
                 alert('⚠️ 이름은 2-10자로 입력해주세요!');
                 continue;
@@ -649,9 +646,9 @@ async function saveScore() {
         }
 
         const totalScore = Math.round(score * (1 + (level - 1) * 0.1));
-        const bonusPercent = ((level-1) * 10);
-        
-        const scoreMessage = 
+        const bonusPercent = ((level - 1) * 10);
+
+        const scoreMessage =
             '🎮 테트리스 게임 결과 🎮\n' +
             '━━━━━━━━━━━━━━━━━━━━━\n\n' +
             `🏆 최종 점수: ${totalScore}점\n\n` +
@@ -664,69 +661,98 @@ async function saveScore() {
 
         alert(scoreMessage);
 
-        // API 호출
+        const savingStatusTitle = document.getElementById('savingStatusTitle');
+        const savingStatusMessage = document.getElementById('savingStatusMessage');
+        const spinner = savingModal.querySelector('.spinner');
+
+        savingStatusTitle.textContent = '점수 저장 중...';
+        savingStatusMessage.textContent = '서버에 점수를 기록하고 있습니다. 잠시만 기다려주세요.';
+        spinner.style.display = 'block';
+        savingModal.style.display = 'flex';
+
+        const scoreData = {
+            playerName,
+            score,
+            level,
+            totalScore,
+            date: new Date().toISOString()
+        };
+
         const formData = new URLSearchParams();
         formData.append('data', JSON.stringify({
-            playerName: playerName,
-            score: score,
-            level: level,
-            date: new Date().toISOString()
+            playerName: scoreData.playerName,
+            score: scoreData.score,
+            level: scoreData.level,
+            date: scoreData.date
         }));
 
-        const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors', // CORS 정책 우회
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: formData.toString()
-        });
+        const blob = new Blob([formData.toString()], { type: 'application/x-www-form-urlencoded' });
+        const queued = navigator.sendBeacon(GOOGLE_APPS_SCRIPT_URL, blob);
 
-        // 로컬 스토리지에도 백업 저장
-        try {
-            const localScores = JSON.parse(localStorage.getItem('tetrisScores') || '[]');
-            localScores.push({
-                playerName,
-                score,
-                level,
-                totalScore,
-                date: new Date().toISOString()
-            });
-            localStorage.setItem('tetrisScores', JSON.stringify(localScores));
-        } catch (e) {
-            console.warn('로컬 저장소 저장 실패:', e);
-        }
+        setTimeout(() => {
+            if (queued) {
+                console.log('점수 전송이 큐에 추가되었습니다.');
+                savingStatusTitle.textContent = '🎉 저장 완료!';
+                savingStatusMessage.textContent = '점수가 성공적으로 전송되었습니다. 잠시 후 순위표에 반영됩니다.';
+                spinner.style.display = 'none';
 
-        console.log('점수가 저장되었습니다.');
-        alert('🎉 점수가 성공적으로 저장되었습니다!');
-        
+                try {
+                    const localScores = JSON.parse(localStorage.getItem('tetrisScores') || '[]');
+                    localScores.push(scoreData);
+                    localStorage.setItem('tetrisScores', JSON.stringify(localScores));
+                } catch (e) {
+                    console.warn('로컬 백업 저장소 저장 실패:', e);
+                }
+            } else {
+                savingStatusTitle.textContent = '❌ 저장 실패';
+                savingStatusMessage.textContent = '점수 전송에 실패했습니다. 다음 게임 시작 시 자동으로 재시도됩니다.';
+                spinner.style.display = 'none';
+
+                try {
+                    const tempScores = JSON.parse(localStorage.getItem('tetrisTempScores') || '[]');
+                    tempScores.push({ ...scoreData, savedAt: new Date().toISOString() });
+                    localStorage.setItem('tetrisTempScores', JSON.stringify(tempScores));
+                } catch (e) {
+                    console.warn('임시 저장소 저장 실패:', e);
+                }
+            }
+
+            setTimeout(() => {
+                savingModal.style.display = 'none';
+                startModal.style.display = 'flex';
+            }, 3000);
+        }, 2000);
+
     } catch (error) {
-        console.error('점수 저장 중 오류 발생:', error);
+        console.error('점수 저장/전송 중 예외 발생:', error);
         
-        // 오류 상세 정보 출력
-        let errorMessage = '점수 저장에 실패했습니다.\n';
-        if (error.message) {
-            errorMessage += `\n오류 내용: ${error.message}`;
+        if (savingModal && savingModal.style.display === 'flex') {
+            document.getElementById('savingStatusTitle').textContent = '❌ 오류 발생';
+            document.getElementById('savingStatusMessage').textContent = '알 수 없는 오류로 점수 저장이 중단되었습니다. 임시 저장소에 기록을 시도합니다.';
+            document.querySelector('#savingModal .spinner').style.display = 'none';
+
+            setTimeout(() => {
+                savingModal.style.display = 'none';
+                startModal.style.display = 'flex';
+            }, 3000);
+        } else {
+            alert('점수 저장 중 알 수 없는 오류가 발생했습니다.');
         }
-        
-        // 로컬 스토리지에 임시 저장 시도
+
         try {
             const tempScores = JSON.parse(localStorage.getItem('tetrisTempScores') || '[]');
             tempScores.push({
-                playerName,
+                playerName: 'Unknown',
                 score,
                 level,
-                totalScore,
+                totalScore: Math.round(score * (1 + (level - 1) * 0.1)),
                 date: new Date().toISOString(),
                 savedAt: new Date().toISOString()
             });
             localStorage.setItem('tetrisTempScores', JSON.stringify(tempScores));
-            errorMessage += '\n\n✅ 점수가 임시로 저장되었습니다.\n다음 게임에서 자동으로 다시 저장을 시도합니다.';
         } catch (e) {
             console.warn('임시 저장소 저장 실패:', e);
         }
-        
-        alert(errorMessage);
     }
 }
 
