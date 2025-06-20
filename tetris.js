@@ -20,62 +20,62 @@ const SHAPES = [
 // 팀장 이벤트 시스템
 const TEAM_LEADERS = [
     {
-        name: "김개발팀장",
-        message: "개발팀장이 출현했다! 코드처럼 빠르게 움직여라! 💻",
+        name: "고양이",
+        message: "고양이 등장! 알수없는..기운이 발생된다 🎇 ",
+        scoreThreshold: 100,
+        speedIncrease: 1.1
+    },
+    {
+        name: "김영훈 파트장",
+        message: "압타밀 파트장 출현! 분유보다 순한 얼굴에 KPI는 독하게! 🍼😈",
         scoreThreshold: 500,
         speedIncrease: 1.2
     },
     {
-        name: "박디자인팀장", 
-        message: "디자인팀장이 출현했다! 아름다운 조화를 만들어라! 🎨",
+        name: "윤성규 파트장",
+        message: "드리미 파트장 진입! 청소기보다 빠르게 너를 정리하러 왔다! 🤖🧹",
         scoreThreshold: 1000,
         speedIncrease: 1.3
     },
     {
-        name: "이기획팀장",
-        message: "기획팀장이 출현했다! 전략적으로 블록을 배치해라! 📋",
+        name: "지연아 과장",
+        message: "지과장 등장! 디자인 하나로 팀원 멘탈까지 리디자인 중! 🎨🧠",
         scoreThreshold: 1500,
         speedIncrease: 1.4
     },
     {
-        name: "최마케팅팀장",
-        message: "마케팅팀장이 출현했다! 화려하게 점수를 올려라! 📢",
+        name: "신선주 팀장",
+        message: "CS 팀장 출격! 민원보다 무서운 건 선주님의 회의 소환술! ☎️🕯️",
         scoreThreshold: 2000,
         speedIncrease: 1.5
     },
     {
-        name: "정인사팀장",
-        message: "인사팀장이 출현했다! 팀워크로 승부해라! 👥",
+        name: "강병훈 팀장",
+        message: "드리미 총괄 병훈 팀장 출몰! 청소기도 숨죽이는 눈빛! 👀💢",
         scoreThreshold: 2500,
         speedIncrease: 1.6
     },
     {
-        name: "한재무팀장",
-        message: "재무팀장이 출현했다! 효율적으로 점수를 쌓아라! 💰",
+        name: "강병현 팀장",
+        message: "전략기획 병현 팀장 강림! PPT는 이미 74장이다! 📊🔥",
         scoreThreshold: 3000,
         speedIncrease: 1.7
     },
     {
-        name: "윤영업팀장",
-        message: "영업팀장이 출현했다! 목표를 달성해라! 🎯",
+        name: "김정준 본부장",
+        message: "정준 본부장 진입! 지금 흐름 이상하면 바로 호출당한다! 🧠📞",
         scoreThreshold: 3500,
         speedIncrease: 1.8
     },
     {
-        name: "강품질팀장",
-        message: "품질팀장이 출현했다! 완벽한 라인을 만들어라! ✅",
+        name: "신선일 이사",
+        message: "경영관리 신 이사님 등장! 계산기 들었다… 다 던져! 🧾📟",
         scoreThreshold: 4000,
         speedIncrease: 1.9
     },
     {
-        name: "조보안팀장",
-        message: "보안팀장이 출현했다! 안전하게 게임을 진행해라! 🔒",
-        scoreThreshold: 4500,
-        speedIncrease: 2.0
-    },
-    {
-        name: "CEO",
-        message: "CEO가 직접 출현했다! 최고의 성과를 보여라! 👑",
+        name: "대표이사",
+        message: "대표님 출격! 회의실 문 열리면 그냥 박수 치자! 👑👏",
         scoreThreshold: 5000,
         speedIncrease: 2.5
     }

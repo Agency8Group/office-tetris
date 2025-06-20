@@ -61,48 +61,105 @@
             }
 
             .game-info {
-                background: rgba(255, 255, 255, 0.95);
-                border-radius: 15px;
-                padding: 25px;
-                min-width: 200px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.3);
+                background: linear-gradient(
+                    135deg,
+                    rgba(255, 255, 255, 0.95) 0%,
+                    rgba(255, 255, 255, 0.98) 100%
+                );
+                border-radius: 20px;
+                padding: 30px;
+                min-width: 220px;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1),
+                    0 8px 20px rgba(102, 126, 234, 0.1),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+                border: 2px solid rgba(255, 255, 255, 0.4);
                 max-height: calc(100vh - 40px);
                 overflow-y: auto;
-                scrollbar-width: none; /* Firefox */
-                -ms-overflow-style: none; /* IE and Edge */
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                backdrop-filter: blur(15px);
+                position: relative;
+            }
+
+            .game-info::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+                border-radius: 20px 20px 0 0;
             }
 
             .game-info::-webkit-scrollbar {
-                display: none; /* Chrome, Safari, Opera */
+                display: none;
             }
 
             .game-info h2 {
                 color: #2c3e50;
-                margin-bottom: 20px;
-                font-size: 1.5em;
+                margin-bottom: 25px;
+                font-size: 1.6em;
                 text-align: center;
-                font-weight: 600;
+                font-weight: 700;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
             }
 
             .score-board {
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: linear-gradient(
+                    135deg,
+                    #667eea 0%,
+                    #764ba2 50%,
+                    #f093fb 100%
+                );
                 color: white;
-                padding: 15px;
-                border-radius: 10px;
+                padding: 20px;
+                border-radius: 15px;
                 margin-bottom: 20px;
                 text-align: center;
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3),
+                    0 4px 12px rgba(118, 75, 162, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .score-board::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.2),
+                    transparent
+                );
+                transition: left 0.8s;
+            }
+
+            .score-board:hover::before {
+                left: 100%;
             }
 
             .score-board h3 {
-                font-size: 1.2em;
-                margin-bottom: 5px;
+                font-size: 1.3em;
+                margin-bottom: 8px;
+                font-weight: 600;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
             }
 
             .score-board .score-value {
-                font-size: 2em;
-                font-weight: bold;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                font-size: 2.2em;
+                font-weight: 800;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+                letter-spacing: 1px;
             }
 
             .next-block-container {
@@ -307,34 +364,76 @@
             }
 
             .modal-content {
-                background: rgba(255, 255, 255, 0.95);
-                padding: 30px;
-                border-radius: 20px;
-                max-width: 500px;
+                background: linear-gradient(
+                    135deg,
+                    rgba(255, 255, 255, 0.95) 0%,
+                    rgba(255, 255, 255, 0.98) 100%
+                );
+                padding: 40px;
+                border-radius: 25px;
+                max-width: 550px;
                 width: 90%;
                 text-align: center;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-                border: 2px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
+                    0 8px 32px rgba(102, 126, 234, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                backdrop-filter: blur(20px);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .modal-content::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(
+                    90deg,
+                    #667eea,
+                    #764ba2,
+                    #f093fb,
+                    #f5576c
+                );
+                border-radius: 25px 25px 0 0;
             }
 
             .modal-content h2 {
                 color: #2c3e50;
-                margin-bottom: 20px;
-                font-size: 2em;
+                margin-bottom: 25px;
+                font-size: 2.2em;
+                font-weight: 700;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
             }
 
             .modal-content .instructions {
                 text-align: left;
-                margin: 20px 0;
-                padding: 20px;
-                background: rgba(102, 126, 234, 0.1);
-                border-radius: 10px;
+                margin: 25px 0;
+                padding: 25px;
+                background: linear-gradient(
+                    135deg,
+                    rgba(102, 126, 234, 0.08) 0%,
+                    rgba(118, 75, 162, 0.08) 100%
+                );
+                border-radius: 15px;
+                border: 1px solid rgba(102, 126, 234, 0.2);
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
             }
 
             .modal-content .instructions h3 {
                 color: #2c3e50;
-                margin-bottom: 15px;
-                font-size: 1.2em;
+                margin-bottom: 18px;
+                font-size: 1.3em;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
 
             .modal-content .instructions ul {
@@ -343,44 +442,92 @@
             }
 
             .modal-content .instructions li {
-                margin: 10px 0;
-                padding-left: 25px;
+                margin: 12px 0;
+                padding: 12px 20px 12px 35px;
                 position: relative;
                 color: #444;
+                background: rgba(255, 255, 255, 0.6);
+                border-radius: 10px;
+                border-left: 4px solid #667eea;
+                transition: all 0.3s ease;
+                font-weight: 500;
+            }
+
+            .modal-content .instructions li:hover {
+                background: rgba(255, 255, 255, 0.9);
+                transform: translateX(5px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
             }
 
             .modal-content .instructions li:before {
-                content: "▶";
+                content: "✨";
                 position: absolute;
-                left: 0;
-                color: #667eea;
+                left: 8px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 1.2em;
             }
 
             .start-btn {
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: linear-gradient(
+                    135deg,
+                    #667eea 0%,
+                    #764ba2 50%,
+                    #f093fb 100%
+                );
                 color: white;
                 border: none;
-                padding: 15px 40px;
-                border-radius: 25px;
-                font-size: 1.2em;
+                padding: 18px 50px;
+                border-radius: 30px;
+                font-size: 1.3em;
+                font-weight: 700;
                 cursor: pointer;
-                transition: transform 0.2s, box-shadow 0.2s;
-                margin-top: 20px;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                margin-top: 25px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3),
+                    0 4px 15px rgba(118, 75, 162, 0.2);
+            }
+
+            .start-btn::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.3),
+                    transparent
+                );
+                transition: left 0.6s;
             }
 
             .start-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+                transform: translateY(-3px) scale(1.05);
+                box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4),
+                    0 8px 20px rgba(118, 75, 162, 0.3);
+                background: linear-gradient(
+                    135deg,
+                    #764ba2 0%,
+                    #667eea 50%,
+                    #f093fb 100%
+                );
             }
 
-            /* 게임 정보 영역 수정 */
-            .game-info {
-                padding: 20px;
-                max-height: 600px;
+            .start-btn:hover::before {
+                left: 100%;
             }
 
-            .score-board {
-                margin-bottom: 15px;
+            .start-btn:active {
+                transform: translateY(-1px) scale(1.02);
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3),
+                    0 4px 12px rgba(118, 75, 162, 0.2);
             }
         </style>
     </head>
@@ -390,18 +537,18 @@
             <div class="modal-content">
                 <h2>🎮 오피스 테트리스 ver.4.1 🎮</h2>
                 <div class="instructions">
-                    <h3>게임 설명</h3>
+                    <h3>🎮 게임 조작법</h3>
                     <ul>
-                        <li>← → : 좌우 이동</li>
-                        <li>↓ : 빠르게 내리기</li>
-                        <li>↑ : 블록 회전</li>
-                        <li>스페이스바 : 즉시 떨어뜨리기</li>
+                        <li>⬅️ ➡️ : 좌우 이동</li>
+                        <li>⬇️ : 빠르게 내리기</li>
+                        <li>⬆️ : 블록 회전</li>
+                        <li>␣ 스페이스바 : 즉시 떨어뜨리기</li>
                     </ul>
-                    <h3>특별 기능</h3>
+                    <h3>🌟 특별 기능</h3>
                     <ul>
-                        <li>레벨업 시 누군가 등장합니다..흐흐</li>
-                        <li>레벨업 마다 게임 속도 증가</li>
-                        <li>높은 레벨일수록 점수 보너스!!!</li>
+                        <li>🎯 레벨업 시 누군가 등장합니다..흐흐</li>
+                        <li>⚡ 레벨업 마다 게임 속도 증가</li>
+                        <li>💎 높은 레벨일수록 점수 보너스!!!</li>
                     </ul>
                 </div>
                 <button class="start-btn">게임 시작!</button>
