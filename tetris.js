@@ -29,7 +29,7 @@ const TEAM_LEADERS = [
     },
     {
         name: "김영훈 파트장",
-        message: "압타밀 파트장 출현! 분유보다 순한 얼굴에 KPI는 독하게! 🍼😈",
+        message: "압타밀 파트장 출현! 분유보다 순한 얼굴에 KPI는 독하게! 😈",
         scoreThreshold: 500,
         speedIncrease: 1.2,
         type: 'gif',
@@ -37,7 +37,7 @@ const TEAM_LEADERS = [
     },
     {
         name: "윤성규 파트장",
-        message: "드리미 파트장 진입! 청소기보다 빠르게 너를 정리하러 왔다! 🤖🧹",
+        message: "드리미 파트장 진입! 청소기보다 빠르게 너를 정리하러 왔다! 🧹",
         scoreThreshold: 1000,
         speedIncrease: 1.3,
         type: 'gif',
@@ -45,7 +45,7 @@ const TEAM_LEADERS = [
     },
     {
         name: "지연아 과장",
-        message: "지과장 등장! 디자인 하나로 팀원 멘탈까지 리디자인 중! 🎨🧠",
+        message: "지과장 등장! 디자인 하나로 팀원 멘탈까지 리디자인 중! 🎨",
         scoreThreshold: 1500,
         speedIncrease: 1.4,
         type: 'gif',
@@ -53,7 +53,7 @@ const TEAM_LEADERS = [
     },
     {
         name: "신선주 팀장",
-        message: "CS 팀장 출격! 민원 만큼 빠르게 블록을 내려주마 ! ☎️🕯️",
+        message: "CS 팀장 출격! 민원 만큼 빠르게 블록을 내려주마 ! ☎️",
         scoreThreshold: 2000,
         speedIncrease: 1.5,
         type: 'gif',
@@ -61,7 +61,7 @@ const TEAM_LEADERS = [
     },
     {
         name: "강병훈 팀장",
-        message: "드리미 총괄 병훈 팀장 출몰! 청소기도 숨죽이는 눈빛! 👀💢",
+        message: "드리미 총괄 병훈 팀장 출몰! 청소기도 숨죽이는 눈빛! 👀",
         scoreThreshold: 2500,
         speedIncrease: 1.6,
         type: 'gif',
@@ -69,7 +69,7 @@ const TEAM_LEADERS = [
     },
     {
         name: "강병현 팀장",
-        message: "전략기획 병현 팀장 강림! PPT는 이미 74장이다! 📊🔥",
+        message: "전략기획 병현 팀장 강림! 지금 게임하는거야?! 업무시간에? 🔥",
         scoreThreshold: 3000,
         speedIncrease: 1.7,
         type: 'gif',
@@ -77,7 +77,7 @@ const TEAM_LEADERS = [
     },
     {
         name: "김정준 본부장",
-        message: "정준 본부장 진입! 지금 흐름 이상하면 바로 호출당한다! 🧠📞",
+        message: "정준 본부장 진입! 지금 흐름 이상하면 바로 호출당한다! 📞",
         scoreThreshold: 3500,
         speedIncrease: 1.8,
         type: 'gif',
@@ -85,7 +85,7 @@ const TEAM_LEADERS = [
     },
     {
         name: "신선일 이사",
-        message: "경영관리 신 이사님 등장! 계산기 들었다… 다 던져! 🧾📟",
+        message: "경영관리 신 이사님 등장! 계산기 들었다… 다 던져! 📟",
         scoreThreshold: 4000,
         speedIncrease: 1.9,
         type: 'gif',
@@ -93,7 +93,7 @@ const TEAM_LEADERS = [
     },
     {
         name: "대표이사",
-        message: "대표님 출격! 회의실 문 열리면 그냥 박수 치자! 👑👏",
+        message: "대표님 출격! 회의실 문 열리면 그냥 박수 치자! 👏",
         scoreThreshold: 5000,
         speedIncrease: 2.5,
         type: 'gif',
@@ -217,7 +217,7 @@ function showEventNotification(leader) {
         existingNotification.remove();
     }
 
-    const imageElement = `<img src="${leader.image}" alt="${leader.name}" style="width: 300px; height: 300px; object-fit: cover; border-radius: 15px; margin: 0 auto; display: block;">`;
+    const imageElement = `<img src="${leader.image}" alt="${leader.name}" style="width: 400px; height: 400px; object-fit: cover; border-radius: 15px; margin: 0 auto; display: block;">`;
 
     // 새 알림 생성
     const notification = document.createElement('div');
@@ -225,8 +225,11 @@ function showEventNotification(leader) {
     notification.innerHTML = `
         <div class="event-content">
             ${imageElement}
-            <h3 style="margin-top: 20px;">${leader.name}</h3>
-            <p>${leader.message}</p>
+            <h3 style="margin-top: 20px; line-height: 1.4;">
+                ${leader.name}
+                <br>
+                <span style="font-size: 0.8em; font-weight: normal;">${leader.message}</span>
+            </h3>
             <div class="event-progress">
                 <div class="progress-bar">
                     <div class="progress-fill"></div>
@@ -236,7 +239,7 @@ function showEventNotification(leader) {
     `;
     document.body.appendChild(notification);
 
-    // 3초 후 알림 제거 및 게임 재개
+    // 4초 후 알림 제거 및 게임 재개
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.5s ease-in forwards';
         notification.addEventListener('animationend', () => {
@@ -248,12 +251,13 @@ function showEventNotification(leader) {
         levelElement.textContent = level;
         currentSpeed = Math.max(100, Math.floor(currentSpeed / leader.speedIncrease));
 
-        // 게임 루프 재시작
+        // 게임 재개
         isPaused = false;
-        lastTime = performance.now(); // 루프 재시작 시 시간 초기화
-        gameLoop = requestAnimationFrame(gameEngine);
+        gameEngine();
+    }, 4000); // 4초
 
-    }, 3000);
+    // 게임 일시정지
+    isPaused = true;
 }
 
 // 팀장 이벤트 체크
