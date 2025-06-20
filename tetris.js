@@ -199,6 +199,16 @@ function showEventNotification(leader) {
         <div class="event-content">
             <h3>${leader.name}</h3>
             <p>${leader.message}</p>
+            <div style="display: flex; justify-content: center; margin: 20px 0;">
+                <dotlottie-player
+                  src="https://lottie.host/7ed38c4a-4553-4d12-9007-6947cdb39576/tlk9gIIrQI.lottie"
+                  background="transparent"
+                  speed="1"
+                  style="width: 100px; height: 100px"
+                  loop
+                  autoplay
+                ></dotlottie-player>
+            </div>
             <div class="event-progress">
                 <div class="progress-bar">
                     <div class="progress-fill"></div>
