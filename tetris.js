@@ -23,61 +23,81 @@ const TEAM_LEADERS = [
         name: "고양이",
         message: "고양이 등장! 알수없는..기운이 발생된다 🎇 ",
         scoreThreshold: 100,
-        speedIncrease: 1.1
+        speedIncrease: 1.1,
+        type: 'lottie',
+        image: 'https://lottie.host/7ed38c4a-4553-4d12-9007-6947cdb39576/tlk9gIIrQI.lottie'
     },
     {
         name: "김영훈 파트장",
         message: "압타밀 파트장 출현! 분유보다 순한 얼굴에 KPI는 독하게! 🍼😈",
         scoreThreshold: 500,
-        speedIncrease: 1.2
+        speedIncrease: 1.2,
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNiNHV6N29pZG9scHRnc2ljajJ5czUzd2QwcnJrM2pnMnc4b3VpY3BhZCZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/3ohze3kG5qO9DcTUbe/giphy.gif'
     },
     {
         name: "윤성규 파트장",
         message: "드리미 파트장 진입! 청소기보다 빠르게 너를 정리하러 왔다! 🤖🧹",
         scoreThreshold: 1000,
-        speedIncrease: 1.3
+        speedIncrease: 1.3,
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNiZjFib3kxenAzajZjN3RwNjB3bnVxdnRhcTNtaXlib3EyMHBrdTliNiZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/33zX3zllJBGY8/giphy.gif'
     },
     {
         name: "지연아 과장",
         message: "지과장 등장! 디자인 하나로 팀원 멘탈까지 리디자인 중! 🎨🧠",
         scoreThreshold: 1500,
-        speedIncrease: 1.4
+        speedIncrease: 1.4,
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNiejF3MHRndDJ6OW5vYTdocHJheXY3cnd5eTJ3YjBvemk2NGd5ZWdudyZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/103JnbaqvpBFGE/giphy.gif'
     },
     {
         name: "신선주 팀장",
-        message: "CS 팀장 출격! 민원보다 무서운 건 선주님의 회의 소환술! ☎️🕯️",
+        message: "CS 팀장 출격! 민원 만큼 빠르게 블록을 내려주마 ! ☎️🕯️",
         scoreThreshold: 2000,
-        speedIncrease: 1.5
+        speedIncrease: 1.5,
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNiNHV6N29pZG9scHRnc2ljajJ5czUzd2QwcnJrM2pnMnc4b3VpY3BhZCZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/3ohze3kG5qO9DcTUbe/giphy.gif'
     },
     {
         name: "강병훈 팀장",
         message: "드리미 총괄 병훈 팀장 출몰! 청소기도 숨죽이는 눈빛! 👀💢",
         scoreThreshold: 2500,
-        speedIncrease: 1.6
+        speedIncrease: 1.6,
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjVjNWt4cjhyZmNmcTFrNzh6dGU4bHc5MGd6d3NvbGd5cnZpa3AzbCZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/H5C8CevNMbpBqNqFjl/giphy.gif'
     },
     {
         name: "강병현 팀장",
         message: "전략기획 병현 팀장 강림! PPT는 이미 74장이다! 📊🔥",
         scoreThreshold: 3000,
-        speedIncrease: 1.7
+        speedIncrease: 1.7,
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjVjNWt4cjhyZmNmcTFrNzh6dGU4bHc5MGd6d3NvbGd5cnZpa3AzbCZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/1BXa2alBjrCXC/giphy.gif'
     },
     {
         name: "김정준 본부장",
         message: "정준 본부장 진입! 지금 흐름 이상하면 바로 호출당한다! 🧠📞",
         scoreThreshold: 3500,
-        speedIncrease: 1.8
+        speedIncrease: 1.8,
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNiNHV6N29pZG9scHRnc2ljajJ5czUzd2QwcnJrM2pnMnc4b3VpY3BhZCZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/gjgWQA5QBuBmUZahOP/giphy.gif'
     },
     {
         name: "신선일 이사",
         message: "경영관리 신 이사님 등장! 계산기 들었다… 다 던져! 🧾📟",
         scoreThreshold: 4000,
-        speedIncrease: 1.9
+        speedIncrease: 1.9,
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNib2Zyb3o5MzEzejkwb245amJmNGo3N2J2a3JnZ3I3YnU5dm1oN2VwZyZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/EgkNhBeY289z2/giphy.gif'
     },
     {
         name: "대표이사",
         message: "대표님 출격! 회의실 문 열리면 그냥 박수 치자! 👑👏",
         scoreThreshold: 5000,
-        speedIncrease: 2.5
+        speedIncrease: 2.5,
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNieHNoYjdnZW80OXh1Y203MWlnbWZjbTI5ajZxYzh0bTNrc210c3RtYSZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/VF65SrQlmClUc/giphy.gif'
     }
 ];
 
@@ -192,23 +212,29 @@ function showEventNotification(leader) {
         existingNotification.remove();
     }
 
+    let imageElement = '';
+    if (leader.type === 'lottie') {
+        imageElement = `
+            <dotlottie-player
+                src="${leader.image}"
+                background="transparent"
+                speed="1"
+                style="width: 250px; height: 250px; margin: 0 auto;"
+                loop
+                autoplay
+            ></dotlottie-player>`;
+    } else if (leader.type === 'gif') {
+        imageElement = `<img src="${leader.image}" alt="${leader.name}" style="width: 250px; height: 250px; object-fit: cover; border-radius: 15px; margin: 0 auto; display: block;">`;
+    }
+
     // 새 알림 생성
     const notification = document.createElement('div');
     notification.className = 'event-notification';
     notification.innerHTML = `
         <div class="event-content">
-            <h3>${leader.name}</h3>
+            ${imageElement}
+            <h3 style="margin-top: 20px;">${leader.name}</h3>
             <p>${leader.message}</p>
-            <div style="display: flex; justify-content: center; margin: 20px 0;">
-                <dotlottie-player
-                  src="https://lottie.host/7ed38c4a-4553-4d12-9007-6947cdb39576/tlk9gIIrQI.lottie"
-                  background="transparent"
-                  speed="1"
-                  style="width: 100px; height: 100px"
-                  loop
-                  autoplay
-                ></dotlottie-player>
-            </div>
             <div class="event-progress">
                 <div class="progress-bar">
                     <div class="progress-fill"></div>
@@ -216,40 +242,38 @@ function showEventNotification(leader) {
             </div>
         </div>
     `;
-    
     document.body.appendChild(notification);
 
-    // 3초 후 자동 제거
+    // 3초 후 알림 제거 및 게임 재개
     setTimeout(() => {
-        if (notification.parentNode) {
+        notification.style.animation = 'slideOut 0.5s ease-in forwards';
+        notification.addEventListener('animationend', () => {
             notification.remove();
-        }
+        });
+
+        // 레벨 및 속도 업데이트
+        level++;
+        levelElement.textContent = level;
+        currentSpeed = Math.max(100, Math.floor(currentSpeed / leader.speedIncrease));
+
+        // 게임 루프 재시작
+        gameLoop = setInterval(drop, currentSpeed);
+
     }, 3000);
 }
 
 // 팀장 이벤트 체크
 function checkTeamLeaderEvent() {
-    // 아직 등장하지 않은 팀장 중 현재 점수를 넘은 첫 번째 팀장을 찾음
-    const nextLeader = TEAM_LEADERS.find(leader => 
-        leader.scoreThreshold <= score && 
-        leader.scoreThreshold > lastEventScore
-    );
-
+    const nextLeader = TEAM_LEADERS.find(leader => score >= leader.scoreThreshold && leader.scoreThreshold > lastEventScore);
     if (nextLeader) {
+        lastEventScore = nextLeader.scoreThreshold;
+        
+        // 게임 루프를 멈춥니다.
+        clearInterval(gameLoop);
+        
         showEventNotification(nextLeader);
         
-        // 레벨 증가
-        level += 1;
-        levelElement.textContent = level;
-        
-        // 스피드 증가 - nextLeader.speedIncrease 배율만큼 증가
-        currentSpeed = Math.max(100, Math.floor(currentSpeed / nextLeader.speedIncrease));
-        if (gameLoop) {
-            clearInterval(gameLoop);
-            gameLoop = setInterval(drop, currentSpeed);
-        }
-        
-        lastEventScore = nextLeader.scoreThreshold;
+        // 속도 증가는 알림이 끝난 후에 적용됩니다.
     }
 }
 
