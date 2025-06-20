@@ -24,8 +24,8 @@ const TEAM_LEADERS = [
         message: "고양이 등장! 알수없는..기운이 발생된다 🎇 ",
         scoreThreshold: 100,
         speedIncrease: 1.1,
-        type: 'lottie',
-        image: 'https://lottie.host/7ed38c4a-4553-4d12-9007-6947cdb39576/tlk9gIIrQI.lottie'
+        type: 'gif',
+        image: 'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3NWwwOW82YTdrc3VqcGt0dHZkM3Z1MzI0a24ydXJ5MmdiaHl6bTYwaCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/BBNYBoYa5VwtO/giphy.gif'
     },
     {
         name: "김영훈 파트장",
@@ -33,7 +33,7 @@ const TEAM_LEADERS = [
         scoreThreshold: 500,
         speedIncrease: 1.2,
         type: 'gif',
-        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNiNHV6N29pZG9scHRnc2ljajJ5czUzd2QwcnJrM2pnMnc4b3VpY3BhZCZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/3ohze3kG5qO9DcTUbe/giphy.gif'
+        image: 'https://media.giphy.com/media/v1.Y2lkPTgyYTE0OTNiZjFib3kxenAzajZjN3RwNjB3bnVxdnRhcTNtaXlib3EyMHBrdTliNiZlcD12MV9naWZzX3RyZW5kaW5nJmN0PWc/33zX3zllJBGY8/giphy.gif'
     },
     {
         name: "윤성규 파트장",
@@ -110,9 +110,13 @@ let gameLoop;
 let currentPiece;
 let nextPiece;
 let gameOver = false;
+let isPaused = false;
 let highScore = localStorage.getItem('tetrisHighScore') || 0;
 let currentSpeed = 800;
 let lastEventScore = 0;
+
+let lastTime = 0;
+let dropCounter = 0;
 
 // 게임 속도 (ms)
 let dropInterval = 1000;
@@ -212,20 +216,7 @@ function showEventNotification(leader) {
         existingNotification.remove();
     }
 
-    let imageElement = '';
-    if (leader.type === 'lottie') {
-        imageElement = `
-            <dotlottie-player
-                src="${leader.image}"
-                background="transparent"
-                speed="1"
-                style="width: 250px; height: 250px; margin: 0 auto;"
-                loop
-                autoplay
-            ></dotlottie-player>`;
-    } else if (leader.type === 'gif') {
-        imageElement = `<img src="${leader.image}" alt="${leader.name}" style="width: 250px; height: 250px; object-fit: cover; border-radius: 15px; margin: 0 auto; display: block;">`;
-    }
+    const imageElement = `<img src="${leader.image}" alt="${leader.name}" style="width: 250px; height: 250px; object-fit: cover; border-radius: 15px; margin: 0 auto; display: block;">`;
 
     // 새 알림 생성
     const notification = document.createElement('div');
@@ -257,7 +248,9 @@ function showEventNotification(leader) {
         currentSpeed = Math.max(100, Math.floor(currentSpeed / leader.speedIncrease));
 
         // 게임 루프 재시작
-        gameLoop = setInterval(drop, currentSpeed);
+        isPaused = false;
+        lastTime = performance.now(); // 루프 재시작 시 시간 초기화
+        gameLoop = requestAnimationFrame(gameEngine);
 
     }, 3000);
 }
@@ -267,9 +260,12 @@ function checkTeamLeaderEvent() {
     const nextLeader = TEAM_LEADERS.find(leader => score >= leader.scoreThreshold && leader.scoreThreshold > lastEventScore);
     if (nextLeader) {
         lastEventScore = nextLeader.scoreThreshold;
+        isPaused = true;
         
         // 게임 루프를 멈춥니다.
-        clearInterval(gameLoop);
+        if (gameLoop) {
+            cancelAnimationFrame(gameLoop);
+        }
         
         showEventNotification(nextLeader);
         
@@ -354,56 +350,78 @@ function startGame() {
     document.addEventListener('keydown', handleKeyPress);
     
     // 게임 루프 시작
-    if (gameLoop) clearInterval(gameLoop);
-    gameLoop = setInterval(drop, currentSpeed);
+    if (gameLoop) {
+        cancelAnimationFrame(gameLoop);
+    }
+    lastTime = 0;
+    dropCounter = 0;
+    gameEngine();
+}
+
+function gameEngine(time = 0) {
+    if (gameOver) {
+        return;
+    }
+
+    const deltaTime = time - lastTime;
+    lastTime = time;
+    dropCounter += deltaTime;
+
+    if (dropCounter > currentSpeed) {
+        drop();
+        dropCounter = 0;
+    }
+
+    draw();
+    gameLoop = requestAnimationFrame(gameEngine);
 }
 
 // 키보드 입력 처리
 function handleKeyPress(event) {
-    if (!gameOver) {
-        switch(event.keyCode) {
-            case 37: // 왼쪽
-                if (isValidMove(-1, 0)) {
-                    currentPiece.x--;
-                }
-                break;
-            case 39: // 오른쪽
-                if (isValidMove(1, 0)) {
-                    currentPiece.x++;
-                }
-                break;
-            case 40: // 아래 (소프트 드롭)
-                if (isValidMove(0, 1)) {
-                    currentPiece.y++;
-                    score += 1; // 소프트 드롭 보너스
-                    scoreElement.textContent = score;
-                    checkTeamLeaderEvent();
-                }
-                break;
-            case 38: // 위
-                rotate();
-                break;
-            case 32: // 스페이스바 (하드 드롭)
-                let dropDistance = 0;
-                while(isValidMove(0, 1)) {
-                    currentPiece.y++;
-                    dropDistance++;
-                }
-                score += dropDistance * 2; // 하드 드롭 보너스
+    if (gameOver || isPaused) return;
+    switch(event.keyCode) {
+        case 37: // 왼쪽
+            if (isValidMove(-1, 0)) {
+                currentPiece.x--;
+            }
+            break;
+        case 39: // 오른쪽
+            if (isValidMove(1, 0)) {
+                currentPiece.x++;
+            }
+            break;
+        case 40: // 아래 (소프트 드롭)
+            if (isValidMove(0, 1)) {
+                currentPiece.y++;
+                score += 1; // 소프트 드롭 보너스
                 scoreElement.textContent = score;
                 checkTeamLeaderEvent();
-                freeze();
-                break;
-        }
-        draw();
+            }
+            break;
+        case 38: // 위
+            rotate();
+            break;
+        case 32: // 스페이스바 (하드 드롭)
+            let dropDistance = 0;
+            while(isValidMove(0, 1)) {
+                currentPiece.y++;
+                dropDistance++;
+            }
+            score += dropDistance * 2; // 하드 드롭 보너스
+            scoreElement.textContent = score;
+            checkTeamLeaderEvent();
+            freeze();
+            break;
     }
+    draw();
 }
 
 // 게임 오버 처리
 function gameOverHandler() {
+    if (gameLoop) {
+        cancelAnimationFrame(gameLoop);
+    }
     gameOver = true;
-    clearInterval(gameLoop);
-    gameLoop = null;
     
     // 최고 점수 업데이트
     if (score > highScore) {
@@ -517,13 +535,16 @@ function freeze() {
 
 // 테트리미노 드롭
 function drop() {
-    if (!gameOver) {
-        if (isValidMove(0, 1)) {
-            currentPiece.y++;
-        } else {
-            freeze();
+    if (!isValidMove(0, 1)) {
+        if (currentPiece.y === 0) {
+            gameOverHandler();
+            return;
         }
-        draw();
+        freeze();
+        clearLines();
+        createNewPiece();
+    } else {
+        currentPiece.y++;
     }
 }
 
